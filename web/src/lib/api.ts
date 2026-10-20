@@ -24,6 +24,20 @@ export class ApiError extends Error {
   }
 }
 
+export interface AwsStatus {
+  region: string | null;
+  nova: { enabled: boolean; model: string };
+  polly: { enabled: boolean; voice: string; engine: string };
+}
+
+export interface NovaPlan {
+  steps: { adapter_id: string; operation: string; input: Record<string, unknown>; depends_on: number[]; dedupe_key: string; because: string }[];
+  rejected: { operation: string; reason: string }[];
+  model: string;
+  latencyMs: number;
+  usage: { inputTokens: number; outputTokens: number } | null;
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -250,6 +264,9 @@ export const api = {
   runScenario: (id: string, injectFaults: boolean) => request<ExecutionView>('POST', `/demo/scenarios/${encodeURIComponent(id)}/run`, { injectFaults }),
   armFault: (operation: string, mode: string) => request<unknown>('POST', '/demo/faults', { operation, mode }),
   clearFaults: () => request<unknown>('DELETE', '/demo/faults'),
+  aws: () => request<AwsStatus>('GET', '/aws'),
+  novaPlan: (requestText: string) => request<NovaPlan>('POST', '/agent/plan', { request: requestText }),
+  voiceUrl: (executionId: string) => `/api/executions/${encodeURIComponent(executionId)}/voice.mp3`,
   reset: (clearHistory: boolean) => request<{ executionsDeleted: number }>('POST', '/demo/reset', { confirm: 'RESET', clearHistory }),
   purge: () => request<{ executions: number }>('POST', '/retention/purge', { confirm: 'PURGE' }),
   settings: () => request<Settings>('GET', '/settings'),

@@ -1,9 +1,9 @@
-import { AgentMark, ArrowRight, CircleAlert, Home, Mic, PlayCircle, RotateCcw, Terminal } from '../components/icons';
+import { AgentMark, ArrowRight, CircleAlert, Home, Mic, Pause, PlayCircle, RotateCcw, Terminal } from '../components/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { api, subscribe, type AdapterView, type ExecutionView, type SimResource } from '../lib/api';
+import { api, subscribe, type AdapterView, type ExecutionView, type NovaPlan, type SimResource } from '../lib/api';
 import type { McpLogEntry } from '../lib/agent';
-import { planFromRequest } from '../lib/planner';
+import { planFromRequest, type PlannedStep } from '../lib/planner';
 import { useRole } from '../lib/auth';
 import { RewindTheater } from '../components/RewindTheater';
 import { fmtTime } from '../lib/format';
@@ -25,7 +25,18 @@ export function DemoPage() {
   const [view, setView] = useState<ExecutionView | null>(null);
   const [runError, setRunError] = useState<unknown>(null);
   const [resetOpen, setResetOpen] = useState(false);
-  const plan = useMemo(() => planFromRequest(request), [request]);
+  const aws = useAsync(() => api.aws(), []);
+  const novaReady = Boolean(aws.data?.nova.enabled);
+  const [planner, setPlanner] = useState<'nova' | 'rules'>('rules');
+  useEffect(() => {
+    if (novaReady) setPlanner('nova');
+  }, [novaReady]);
+  // A Nova plan belongs to the exact request text it was made for.
+  const [nova, setNova] = useState<{ request: string; plan: NovaPlan } | null>(null);
+  const [planning, setPlanning] = useState(false);
+  const rulesPlan = useMemo(() => planFromRequest(request), [request]);
+  const novaPlan = nova && nova.request === request ? nova.plan : null;
+  const plan: PlannedStep[] = planner === 'nova' ? (novaPlan?.steps ?? []) : rulesPlan;
   const adapters = useAsync(() => api.adapters(), []);
   const state = useAsync(() => api.demoState(), []);
 
@@ -53,7 +64,31 @@ export function DemoPage() {
     [executionId, refreshExecution, state.reload],
   );
 
+  async function planWithNova(): Promise<PlannedStep[] | null> {
+    setPlanning(true);
+    try {
+      const p = await api.novaPlan(request);
+      setNova({ request, plan: p });
+      return p.steps;
+    } catch (error) {
+      toast.push({ tone: 'bad', title: 'Amazon Nova could not plan this request', body: error instanceof Error ? error.message : String(error) });
+      return null;
+    } finally {
+      setPlanning(false);
+    }
+  }
+
   async function run() {
+    let steps = plan;
+    if (planner === 'nova' && !novaPlan) {
+      const fresh = await planWithNova();
+      if (!fresh) return;
+      if (!fresh.length) {
+        toast.push({ tone: 'warn', title: 'Nothing to run', body: 'Amazon Nova found no registered operation that fits this request.' });
+        return;
+      }
+      steps = fresh;
+    }
     setRunning(true);
     setLog([]);
     setView(null);
@@ -67,7 +102,7 @@ export function DemoPage() {
       const { runAgent } = await import('../lib/agent');
       const { executionId: id } = await runAgent({
         request,
-        plan: plan.map(({ because: _b, ...s }) => ({ ...s, because: '' })),
+        plan: steps.map(({ because: _b, ...s }) => ({ ...s, because: '' })),
         pacingMs: paced ? 650 : 0,
         onLog: (e) => setLog((xs) => [...xs, e]),
         onExecution: (eid) => setExecutionId(eid),
@@ -96,8 +131,11 @@ export function DemoPage() {
       <div role="note" className="mb-6 flex items-start gap-2 rounded-lg border border-border bg-surface-2/60 px-4 py-3 text-xs text-fg-2">
         <CircleAlert className="mt-0.5 size-4 shrink-0 text-fg-3" aria-hidden />
         <p>
-          <strong className="font-semibold text-fg">Browser simulation.</strong> This is not a live Alexa+ integration and controls no real device. The "voice" request is typed text,
-          the planner is a deterministic keyword matcher (no LLM), and the home is synthetic data in the local database. The MCP connection and every tool call are real.
+          <strong className="font-semibold text-fg">Browser simulation.</strong> This is not a live Alexa+ integration and controls no real device. The "voice" request is typed text
+          and the home is synthetic data. {planner === 'nova'
+            ? 'Amazon Nova on Bedrock proposes the steps; REWIND validates each one against the operation schema and decides ordering itself. Execution, recovery and verification never involve the model.'
+            : 'The planner is a deterministic keyword matcher (no LLM).'}{' '}
+          The MCP connection and every tool call are real.
         </p>
       </div>
 
@@ -120,6 +158,25 @@ export function DemoPage() {
                   className="w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-relaxed outline-none focus:border-accent"
                 />
               </label>
+              <div role="radiogroup" aria-label="Planner" className="inline-flex rounded-lg border border-border bg-surface-2 p-0.5 text-xs">
+                {([
+                  ['nova', 'Amazon Nova', novaReady],
+                  ['rules', 'Deterministic rules', true],
+                ] as const).map(([id, label, ok]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="radio"
+                    aria-checked={planner === id}
+                    disabled={!ok || running}
+                    title={!ok ? 'Set REWIND_AWS_REGION and AWS credentials on the server to enable Amazon Nova.' : undefined}
+                    onClick={() => setPlanner(id)}
+                    className={cx('rounded-md px-3 py-1.5 font-medium transition', planner === id ? 'bg-surface text-fg shadow-sm' : 'text-fg-2 hover:text-fg disabled:opacity-50')}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={inject} onChange={(e) => setInject(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />
@@ -131,16 +188,30 @@ export function DemoPage() {
                 </label>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary" onClick={run} loading={running} disabled={!plan.length || readOnly} icon={<PlayCircle className="size-4" aria-hidden />}>
-                  {running ? 'Agent running…' : 'Run agent via MCP'}
+                <Button variant="primary" onClick={run} loading={running || planning} disabled={(planner === 'rules' && !plan.length) || readOnly} icon={<PlayCircle className="size-4" aria-hidden />}>
+                  {planning ? 'Amazon Nova is planning…' : running ? 'Agent running…' : planner === 'nova' && !novaPlan ? 'Plan with Nova and run' : 'Run agent via MCP'}
                 </Button>
-                {!plan.length && <span className="text-xs text-warn">The planner recognised no supported intent in this request.</span>}
+                {planner === 'nova' && !novaPlan && (
+                  <Button onClick={() => void planWithNova()} disabled={planning || running || readOnly}>
+                    Preview plan
+                  </Button>
+                )}
+                {planner === 'rules' && !plan.length && <span className="text-xs text-warn">The planner recognised no supported intent in this request.</span>}
                 {readOnly && <span className="text-xs text-fg-3">Viewers can watch but not run the agent. Ask an admin for the member role.</span>}
               </div>
             </div>
           </Section>
 
-          <Section title="Proposed plan" description="Produced by the deterministic planner. Policy decisions and recovery capabilities come from the server registry.">
+          <Section
+            title="Proposed plan"
+            description={
+              planner === 'nova'
+                ? novaPlan
+                  ? `Proposed by ${novaPlan.model} in ${novaPlan.latencyMs} ms${novaPlan.usage ? ` (${novaPlan.usage.inputTokens + novaPlan.usage.outputTokens} tokens)` : ''}, then validated by REWIND. Policy and recovery capabilities come from the server registry.`
+                  : 'Amazon Nova proposes steps when you run or preview. REWIND rejects anything outside the registry or its input schemas.'
+                : 'Produced by the deterministic planner. Policy decisions and recovery capabilities come from the server registry.'
+            }
+          >
             {plan.length ? (
               <ol className="divide-y divide-border">
                 {plan.map((s, i) => {
@@ -154,7 +225,7 @@ export function DemoPage() {
                         <p className="font-mono text-xs text-fg-3">
                           {s.adapter_id}:{s.operation} {JSON.stringify(s.input)}
                         </p>
-                        <p className="text-xs text-fg-3">Because the request {s.because}.</p>
+                        <p className="text-xs text-fg-3">{planner === 'nova' ? <>Nova&apos;s reason: &ldquo;{s.because}&rdquo;</> : <>Because the request {s.because}.</>}</p>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {op && <LabeledBadge map={POLICY_DECISION} value={op.policy.decision} />}
@@ -165,8 +236,22 @@ export function DemoPage() {
                   );
                 })}
               </ol>
+            ) : planner === 'nova' && !novaPlan ? (
+              <EmptyState title="Not planned yet">Press Preview plan, or run, and Amazon Nova will propose steps for this request.</EmptyState>
             ) : (
               <EmptyState title="No plan">Try mentioning the thermostat, the task list, or the security routine.</EmptyState>
+            )}
+            {planner === 'nova' && novaPlan && novaPlan.rejected.length > 0 && (
+              <div className="border-t border-border px-4 py-3 text-xs text-fg-2">
+                <p className="font-medium text-warn">REWIND refused {novaPlan.rejected.length} proposal{novaPlan.rejected.length > 1 ? 's' : ''} from the model:</p>
+                <ul className="mt-1 space-y-0.5 font-mono">
+                  {novaPlan.rejected.map((r, i) => (
+                    <li key={i}>
+                      {r.operation}: {r.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </Section>
 
@@ -186,7 +271,7 @@ export function DemoPage() {
         </div>
 
         <div className="space-y-6">
-          <Outcome view={view} running={running} error={runError} executionId={executionId} />
+          <Outcome view={view} running={running} error={runError} executionId={executionId} voice={Boolean(aws.data?.polly.enabled)} />
           <HomeState resources={state.data?.resources} faults={state.data?.faults ?? []} error={state.error} />
         </div>
       </div>
@@ -245,7 +330,7 @@ function McpRow({ e }: { e: McpLogEntry }) {
   );
 }
 
-function Outcome({ view, running, error, executionId }: { view: ExecutionView | null; running: boolean; error: unknown; executionId: string | null }) {
+function Outcome({ view, running, error, executionId, voice }: { view: ExecutionView | null; running: boolean; error: unknown; executionId: string | null; voice: boolean }) {
   if (error) return <ErrorState error={error} />;
   if (!view) {
     return (
@@ -275,6 +360,7 @@ function Outcome({ view, running, error, executionId }: { view: ExecutionView | 
           <span className="text-xs text-fg-3">{st?.help}</span>
         </div>
         {e.failureReason && <p className="rounded-md bg-bad-soft px-3 py-2 text-xs text-bad">{e.failureReason}</p>}
+        {voice && !running && !['pending', 'running', 'recovering'].includes(e.status) && <VoiceReport executionId={e.id} status={e.status} />}
         <ul className="space-y-2">
           {view.actions.map((a) => (
             <li key={a.id} className="flex items-start gap-2 text-sm">
@@ -475,5 +561,39 @@ function ResetDialog({ open, onClose, onDone }: { open: boolean; onClose: () => 
       </label>
       {err && <p className="mt-3 rounded bg-bad-soft px-3 py-2 text-xs text-bad" role="alert">{err}</p>}
     </Dialog>
+  );
+}
+
+function VoiceReport({ executionId, status }: { executionId: string; status: string }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const [state, setState] = useState<'idle' | 'loading' | 'playing' | 'error'>('idle');
+  // A new status means a new summary; drop any audio for the old one.
+  useEffect(() => setState('idle'), [executionId, status]);
+  const play = () => {
+    const el = ref.current!;
+    if (state === 'playing') {
+      el.pause();
+      el.currentTime = 0;
+      setState('idle');
+      return;
+    }
+    setState('loading');
+    el.src = `${api.voiceUrl(executionId)}?s=${encodeURIComponent(status)}`;
+    el.play().catch(() => setState('error'));
+  };
+  return (
+    <div className="flex items-center gap-3 rounded-md border border-border bg-surface-2/60 px-3 py-2">
+      <button
+        type="button"
+        onClick={play}
+        className="inline-flex items-center gap-2 rounded-md bg-fg px-3 py-1.5 text-xs font-semibold text-bg transition hover:opacity-90"
+        aria-label={state === 'playing' ? 'Stop voice report' : 'Listen to the voice report'}
+      >
+        {state === 'playing' ? <Pause className="size-3.5" aria-hidden /> : <Mic className="size-3.5" aria-hidden />}
+        {state === 'loading' ? 'Preparing…' : state === 'playing' ? 'Stop' : 'Listen'}
+      </button>
+      <p className="text-xs text-fg-2">{state === 'error' ? 'The voice report could not be played.' : 'REWIND\'s own outcome, read aloud by Amazon Polly. Written from recorded state, not by a model.'}</p>
+      <audio ref={ref} onPlaying={() => setState('playing')} onEnded={() => setState('idle')} onError={() => setState('error')} preload="none" className="hidden" />
+    </div>
   );
 }

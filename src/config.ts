@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { awsConfigFromEnv, type AwsConfig } from './services/aws.js';
 import { ssoProvidersFromEnv, type SsoProviderConfig } from './services/sso.js';
 
 const LOCAL_HOSTS = ['127.0.0.1', 'localhost', '::1'];
@@ -57,6 +58,8 @@ export interface Config {
   /** Reverse-proxy hops in front of the server (Render: 1). 0 trusts no forwarding headers. */
   trustProxy: number;
   ssoProviders: SsoProviderConfig[];
+  /** Optional Amazon Nova planning and Amazon Polly voice. */
+  aws: AwsConfig;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -96,5 +99,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     secretKey: c.REWIND_SECRET_KEY ?? null,
     trustProxy: c.REWIND_TRUST_PROXY,
     ssoProviders: ssoProvidersFromEnv(env),
+    aws: awsConfigFromEnv(env),
   };
 }

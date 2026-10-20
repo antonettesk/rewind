@@ -27,6 +27,8 @@ import { DEFAULT_POLICIES, LOCAL_WORKSPACE } from './defaults.js';
 import { Queries } from './queries.js';
 import { getScenario, SCENARIOS } from './scenarios.js';
 
+import { AwsFeatures } from './aws.js';
+
 export interface App {
   config: Config;
   db: Db;
@@ -42,13 +44,14 @@ export interface App {
   metrics: Metrics;
   security: SecurityService;
   sso: SsoService;
+  aws: AwsFeatures;
   log: Logger;
   startedAt: string;
   demo: DemoService;
   close(): void;
 }
 
-export async function createApp(config: Config, opts: { logger?: Logger; mailer?: Mailer } = {}): Promise<App> {
+export async function createApp(config: Config, opts: { logger?: Logger; mailer?: Mailer; aws?: AwsFeatures } = {}): Promise<App> {
   const log = opts.logger ?? createLogger(config.logLevel);
   const db = openDatabase(config.dbPath);
   const repo = new SqliteRepository(db);
@@ -94,7 +97,8 @@ export async function createApp(config: Config, opts: { logger?: Logger; mailer?
 
   const queries = new Queries(repo, registry);
   const demo = new DemoService(engine, homeStore, repo);
-  return { config, db, repo, registry, engine, queries, homeStore, accounts, team, webhooks, mailer, metrics, security, sso, log, startedAt: new Date().toISOString(), demo, close: () => db.close() };
+  const aws = opts.aws ?? new AwsFeatures(config.aws, registry);
+  return { config, db, repo, registry, engine, queries, homeStore, accounts, team, webhooks, mailer, metrics, security, sso, aws, log, startedAt: new Date().toISOString(), demo, close: () => db.close() };
 }
 
 export async function seedPolicies(repo: Repository, workspaceId: string) {
