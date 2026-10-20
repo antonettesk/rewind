@@ -1,0 +1,291 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Neutral surfaces, one accent, and a small fixed set of status
+ * colors that carry meaning: verified (green), attention (amber), failed (red),
+ * in-progress (blue), not-required (neutral).
+ */
+:root {
+  color-scheme: light;
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f2;
+  --border: #e4e4e0;
+  --border-strong: #d0d0ca;
+  --text: #17171a;
+  --text-2: #55555c;
+  --text-3: #85858c;
+  --accent: #4f46e5;
+  --accent-fg: #ffffff;
+  --accent-soft: #eef0ff;
+  --brand-a: #6366f1;
+  --brand-b: #06b6d4;
+  --ok: #16794a;
+  --ok-soft: #e8f5ee;
+  --warn: #9a5b00;
+  --warn-soft: #fdf3e2;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --info: #1d5fc6;
+  --info-soft: #e9f1fd;
+  --code-bg: #f6f6f4;
+  --ring: #4f46e5;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #0e0f11;
+  --surface: #15161a;
+  --surface-2: #1c1d22;
+  --border: #2a2b31;
+  --border-strong: #3a3b42;
+  --text: #ececee;
+  --text-2: #a9a9b1;
+  --text-3: #74747c;
+  --accent: #8b8cff;
+  --accent-fg: #0b0b12;
+  --accent-soft: #1c1d3a;
+  --brand-a: #818cf8;
+  --brand-b: #22d3ee;
+  --ok: #4cc38a;
+  --ok-soft: #12271d;
+  --warn: #e7b04b;
+  --warn-soft: #2b2212;
+  --bad: #f2756a;
+  --bad-soft: #2e1614;
+  --info: #79a8f5;
+  --info-soft: #14213a;
+  --code-bg: #111216;
+  --ring: #8b8cff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-code: var(--code-bg);
+  --color-brand-a: var(--brand-a);
+  --color-brand-b: var(--brand-b);
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200px 0;
+  }
+  to {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0, var(--border) 50%, var(--surface-2) 100%);
+  background-size: 200px 100%;
+  animation: shimmer 1.3s infinite linear;
+  border-radius: 6px;
+}
+
+/* ── Signature utilities ── */
+.text-gradient {
+  background: linear-gradient(100deg, var(--brand-a), var(--brand-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.bg-brand {
+  background: linear-gradient(100deg, var(--brand-a), var(--brand-b));
+}
+.bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+}
+.glow {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--brand-a) 40%, transparent), 0 8px 40px -8px color-mix(in oklab, var(--brand-a) 45%, transparent);
+}
+.surface-raised {
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.12);
+}
+.dark .surface-raised {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  color: var(--text-2);
+}
+
+@keyframes ticker-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Landing page motion */
+@keyframes aurora {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8%, 6%) scale(1.15); }
+}
+.aurora { animation: aurora 18s ease-in-out infinite; }
+.aurora-2 { animation: aurora 22s ease-in-out infinite reverse; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee { animation: marquee 40s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+
+/* ── Landing: futuristic motion system ── */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes spin-angle {
+  to { --angle: 360deg; }
+}
+/* A slowly rotating conic halo, in the spirit of an on-device intelligence glow. */
+.orb {
+  background: conic-gradient(from var(--angle), #6366f1, #22d3ee, #a78bfa, #f0abfc, #6366f1);
+  animation: spin-angle 14s linear infinite;
+}
+/* A light beam that travels around a card's border. */
+.beam {
+  position: relative;
+  isolation: isolate;
+}
+.beam::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--angle), transparent 0deg 300deg, rgba(165, 180, 252, 0.9) 330deg, rgba(103, 232, 249, 0.9) 345deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin-angle 6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+/* A perspective floor grid that scrolls toward the viewer. */
+@keyframes floor {
+  from { background-position: 0 0; }
+  to { background-position: 0 64px; }
+}
+.floor {
+  background-image:
+    linear-gradient(to right, rgba(129, 140, 248, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(129, 140, 248, 0.18) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(600px) rotateX(62deg);
+  transform-origin: 50% 0%;
+  animation: floor 3.5s linear infinite;
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 55%, transparent);
+}
+/* Horizontal scan line sweeping a surface. */
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(1200%); opacity: 0; }
+}
+.scan { animation: scan 6s cubic-bezier(.45, 0, .55, 1) infinite; }
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y { animation: float-y 7s ease-in-out infinite; }
+/* Shimmering text sweep for highlighted words. */
+@keyframes sheen {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.sheen {
+  background: linear-gradient(100deg, #a5b4fc 0%, #67e8f9 30%, #ffffff 45%, #67e8f9 60%, #a5b4fc 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 6s linear infinite;
+}
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}

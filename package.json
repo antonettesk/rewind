@@ -1,0 +1,61 @@
+{
+  "name": "rewind",
+  "version": "0.1.0",
+  "description": "REWIND: execution control, recovery and verification for tool-using AI agents.",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm --watch src/main.ts",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build": "vite build --config web/vite.config.ts",
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm src/main.ts",
+    "demo": "npm run build && npm run start",
+    "demo:mcp": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm scripts/mcp-demo.ts",
+    "db:migrate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm scripts/db.ts migrate",
+    "db:reset": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm scripts/db.ts reset",
+    "typecheck": "tsc -p tsconfig.json && tsc -p web/tsconfig.json",
+    "lint": "npm run typecheck",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/express": "^2.0.2",
+    "@modelcontextprotocol/node": "^2.1.1",
+    "@modelcontextprotocol/server": "^2.3.1",
+    "compression": "^1.8.2",
+    "express": "^5.3.0",
+    "jose": "^6.2.12",
+    "motion": "^14.3.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.4.0",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.2.14"
+  }
+}

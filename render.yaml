@@ -1,0 +1,38 @@
+# Render Blueprint for REWIND. See docs/deploy-render.md.
+services:
+  - type: web
+    name: rewind
+    runtime: node
+    plan: starter
+    region: oregon
+    # Dev dependencies (Vite, Tailwind) are needed to build the console.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /readyz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: REWIND_HOST
+        value: 0.0.0.0
+      - key: REWIND_ENVIRONMENT
+        value: render
+      # Render terminates TLS one proxy hop in front of the app.
+      - key: REWIND_TRUST_PROXY
+        value: "1"
+      - key: REWIND_COOKIE_SECURE
+        value: "true"
+      # Lives on the persistent disk below, so data survives restarts and deploys.
+      - key: REWIND_DB_PATH
+        value: /var/data/rewind.db
+      # 32 random bytes, base64, generated once by Render. Encrypts MFA seeds at rest.
+      - key: REWIND_SECRET_KEY
+        generateValue: true
+      - key: REWIND_METRICS_TOKEN
+        generateValue: true
+      - key: REWIND_RESEND_API_KEY
+        sync: false
+    disk:
+      name: rewind-data
+      mountPath: /var/data
+      sizeGB: 1
