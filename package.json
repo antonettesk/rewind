@@ -56,8 +56,5 @@
   "private": true,
   "engines": {
     "node": ">=22.13"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.14"
   }
 }
