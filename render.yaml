@@ -1,7 +1,7 @@
 # Render Blueprint for REWIND. See docs/deploy-render.md.
 services:
   - type: web
-    name: rewind
+    name: getrewind
     runtime: node
     plan: starter
     region: oregon
