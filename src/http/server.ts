@@ -778,7 +778,9 @@ export function createHttpApp(app: App) {
   if (existsSync(dist)) {
     http.use('/assets', express.static(join(dist, 'assets'), { immutable: true, maxAge: '365d', fallthrough: false }));
     http.use(express.static(dist, { index: false, maxAge: '1h' }));
-    http.get(/^(?!\/api|\/mcp).*/, (_req, res) => {
+    http.get(/^(?!\/api|\/mcp).*/, (req, res, next) => {
+      // A missing file (anything with an extension) is a real 404, never the app shell.
+      if (/\.[a-z0-9]{1,8}$/i.test(req.path)) return next(new DomainError('NOT_FOUND', 'No such file.'));
       res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(join(dist, 'index.html'));
     });
