@@ -19,6 +19,7 @@ import type { CallContext } from '../engine/engine.js';
 import { buildMcpServer, SERVER_INFO } from '../mcp/tools.js';
 import type { App } from '../services/app.js';
 import { LOCAL_WORKSPACE } from '../services/defaults.js';
+import { spokenSummary } from '../services/aws.js';
 import { renderReport } from '../services/report.js';
 import { SESSION_COOKIE, type AuthContext } from '../services/accounts.js';
 import { requireRole } from '../services/team.js';
@@ -51,7 +52,8 @@ export function createHttpApp(app: App) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    // Microphone for this origin only: the agent demo takes spoken requests.
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=()');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader(
       'Content-Security-Policy',
@@ -246,18 +248,32 @@ export function createHttpApp(app: App) {
     res.json(preview);
   });
 
+  const meBody = async (a: NonNullable<NonNullable<Request['rewind']>['auth']>) => ({
+    user: { id: a.user.id, name: a.user.name, email: a.user.email, kind: a.user.kind, mfaEnabled: app.security.status(a.user.id).enabled },
+    workspace: a.workspace,
+    workspaces: await app.accounts.workspaces(a.user.id),
+    milestones: await app.accounts.milestones(a.workspace.id),
+    via: a.via,
+  });
+
+  // Browser session probe: 200 either way, so signed-out visitors see no console error.
+  // It runs the same authentication as every other route and treats "not signed in" as an answer.
+  api.get('/auth/session', (req, res, next) => {
+    void auth(req, res, (err?: unknown) => {
+      if (err) return err instanceof DomainError && err.code === 'UNAUTHORIZED' ? void res.json({ signedIn: false, me: null }) : next(err);
+      const a = req.rewind?.auth;
+      if (!a) return void res.json({ signedIn: false, me: null });
+      meBody(a).then((me) => res.json({ signedIn: true, me }), next);
+    });
+  });
+
   api.use(auth);
+
 
   api.get('/auth/me', async (req, res) => {
     const a = req.rewind!.auth;
     if (!a) throw new DomainError('UNAUTHORIZED', 'Not signed in.');
-    res.json({
-      user: { id: a.user.id, name: a.user.name, email: a.user.email, kind: a.user.kind, mfaEnabled: app.security.status(a.user.id).enabled },
-      workspace: a.workspace,
-      workspaces: await app.accounts.workspaces(a.user.id),
-      milestones: await app.accounts.milestones(a.workspace.id),
-      via: a.via,
-    });
+    res.json(await meBody(a));
   });
 
   api.patch('/workspace', role('admin'), async (req, res) => {
@@ -370,6 +386,12 @@ export function createHttpApp(app: App) {
   api.post('/agent/plan', role('member'), async (req, res) => {
     const body = z.object({ request: z.string().trim().min(3).max(500) }).strict().parse(req.body);
     res.json(await app.aws.plan(req.rewind!.workspaceId, body.request));
+  });
+
+  // REWIND's own spoken-style outcome, built from recorded state. Browsers read it aloud when Polly is off.
+  api.get('/executions/:id/summary', async (req, res) => {
+    const view = await app.queries.executionView(req.rewind!.workspaceId, String(req.params.id));
+    res.json({ text: spokenSummary(view, (key) => app.registry.describe().find((o) => o.key === key)?.title ?? key) });
   });
 
   // Amazon Polly reads REWIND's deterministic summary of the execution.

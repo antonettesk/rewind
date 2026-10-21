@@ -194,6 +194,7 @@ export interface ApiKey {
 
 export const api = {
   me: () => request<Me>('GET', '/auth/me'),
+  session: () => request<{ signedIn: boolean; me: Me | null }>('GET', '/auth/session'),
   signup: (b: { name: string; email: string; password: string; workspaceName?: string }) => request<{ ok: true }>('POST', '/auth/signup', b),
   login: (b: { email: string; password: string }) => request<{ ok?: true; mfaRequired?: true }>('POST', '/auth/login', b),
   mfaLogin: (code: string) => request<{ ok: true }>('POST', '/auth/mfa', { code }),
@@ -266,6 +267,7 @@ export const api = {
   clearFaults: () => request<unknown>('DELETE', '/demo/faults'),
   aws: () => request<AwsStatus>('GET', '/aws'),
   novaPlan: (requestText: string) => request<NovaPlan>('POST', '/agent/plan', { request: requestText }),
+  executionSummary: (executionId: string) => request<{ text: string }>('GET', `/executions/${encodeURIComponent(executionId)}/summary`),
   voiceUrl: (executionId: string) => `/api/executions/${encodeURIComponent(executionId)}/voice.mp3`,
   reset: (clearHistory: boolean) => request<{ executionsDeleted: number }>('POST', '/demo/reset', { confirm: 'RESET', clearHistory }),
   purge: () => request<{ executions: number }>('POST', '/retention/purge', { confirm: 'PURGE' }),

@@ -27,8 +27,12 @@ export async function runAgent(opts: {
   pacingMs: number;
   onLog: (e: McpLogEntry) => void;
   onExecution: (id: string) => void;
-}): Promise<{ executionId: string; failed: boolean }> {
-  let n = 0;
+  /** Resume an execution that paused for approval: skip discovery and creation, start at this step. */
+  resume?: { executionId: string; from: number };
+  /** First log id, so entries from a resumed run never collide with earlier ones. */
+  idBase?: number;
+}): Promise<{ executionId: string; failed: boolean; pausedAt: number | null }> {
+  let n = opts.idBase ?? 0;
   const log = (e: Omit<McpLogEntry, 'id' | 'at'>) => opts.onLog({ ...e, id: ++n, at: new Date().toISOString() });
   const pause = () => new Promise((r) => setTimeout(r, opts.pacingMs));
 
@@ -48,21 +52,29 @@ export async function runAgent(opts: {
   };
 
   try {
-    t = performance.now();
-    const tools = await client.listTools();
-    log({ method: 'tools/list', ms: Math.round(performance.now() - t), result: tools.tools.map((x) => x.name) });
-    await pause();
+    let executionId: string;
+    if (opts.resume) {
+      executionId = opts.resume.executionId;
+      log({ method: 'resume', ms: 0, note: `approval granted; continuing from step ${opts.resume.from + 1}` });
+    } else {
+      t = performance.now();
+      const tools = await client.listTools();
+      log({ method: 'tools/list', ms: Math.round(performance.now() - t), result: tools.tools.map((x) => x.name) });
+      await pause();
 
-    await call('list_operations', { adapter_id: 'home-sim' });
-    await pause();
+      await call('list_operations', { adapter_id: 'home-sim' });
+      await pause();
 
-    const created = await call('create_execution', { task_description: opts.request, idempotency_key: `agent-sim-${Date.now()}` });
-    if (created.isError) throw new Error(created.data?.error?.message ?? 'create_execution failed');
-    const executionId = created.data.execution.id as string;
+      const created = await call('create_execution', { task_description: opts.request, idempotency_key: `agent-sim-${Date.now()}` });
+      if (created.isError) throw new Error(created.data?.error?.message ?? 'create_execution failed');
+      executionId = created.data.execution.id as string;
+    }
     opts.onExecution(executionId);
 
     let failed = false;
-    for (const step of opts.plan) {
+    let pausedAt: number | null = null;
+    for (const [index, step] of opts.plan.entries()) {
+      if (opts.resume && index < opts.resume.from) continue;
       await pause();
       const r = await call('execute_registered_action', {
         execution_id: executionId,
@@ -72,19 +84,24 @@ export async function runAgent(opts: {
         depends_on: step.depends_on,
         dedupe_key: step.dedupe_key,
       });
+      // An approval gate is reported as a tool error so agents notice it; it is a pause, not a failure.
+      if (r.data?.step?.status === 'awaiting_approval' || r.data?.execution?.status === 'awaiting_approval') {
+        pausedAt = index;
+        break;
+      }
       if (r.isError) {
         failed = true;
         break;
       }
-      if (r.data?.execution?.status === 'awaiting_approval') break;
     }
+    if (pausedAt !== null) return { executionId, failed, pausedAt };
     await pause();
     if (failed) await call('get_recovery_status', { execution_id: executionId });
     else {
       const status = await call('get_execution', { execution_id: executionId });
       if (status.data?.execution?.status === 'running') await call('complete_execution', { execution_id: executionId });
     }
-    return { executionId, failed };
+    return { executionId, failed, pausedAt };
   } finally {
     await client.close().catch(() => undefined);
   }

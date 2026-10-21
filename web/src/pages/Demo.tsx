@@ -1,9 +1,11 @@
 import { AgentMark, ArrowRight, CircleAlert, Home, Mic, Pause, PlayCircle, RotateCcw, Terminal } from '../components/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { api, subscribe, type AdapterView, type ExecutionView, type NovaPlan, type SimResource } from '../lib/api';
 import type { McpLogEntry } from '../lib/agent';
-import { planFromRequest, type PlannedStep } from '../lib/planner';
+import { planFromRequest, SAMPLE_PROMPTS, type PlannedStep } from '../lib/planner';
+import { canListen, confirmation, hush, listen, say } from '../lib/voice';
+import { VoiceOrb, type VoiceState } from '../components/VoiceOrb';
 import { useRole } from '../lib/auth';
 import { RewindTheater } from '../components/RewindTheater';
 import { fmtTime } from '../lib/format';
@@ -16,7 +18,14 @@ export function DemoPage() {
   const toast = useToast();
   const { can } = useRole();
   const readOnly = !can('member');
-  const [request, setRequest] = useState(DEFAULT_REQUEST);
+  const [params, setParams] = useSearchParams();
+  const [request, setRequest] = useState(() => params.get('request')?.slice(0, 500) || DEFAULT_REQUEST);
+  const [voice, setVoice] = useState<VoiceState>('idle');
+  const [speakReplies, setSpeakReplies] = useState(() => params.get('voice') === '1');
+  const stopListening = useRef<(() => void) | null>(null);
+  // A run paused at the approval gate: the agent resumes from the next step once a person approves.
+  const paused = useRef<{ executionId: string; steps: PlannedStep[]; at: number; talk: boolean } | null>(null);
+  useEffect(() => () => hush(), []);
   const [inject, setInject] = useState(true);
   const [paced, setPaced] = useState(true);
   const [running, setRunning] = useState(false);
@@ -64,11 +73,11 @@ export function DemoPage() {
     [executionId, refreshExecution, state.reload],
   );
 
-  async function planWithNova(): Promise<PlannedStep[] | null> {
+  async function planWithNova(text = request): Promise<PlannedStep[] | null> {
     setPlanning(true);
     try {
-      const p = await api.novaPlan(request);
-      setNova({ request, plan: p });
+      const p = await api.novaPlan(text);
+      setNova({ request: text, plan: p });
       return p.steps;
     } catch (error) {
       toast.push({ tone: 'bad', title: 'Amazon Nova could not plan this request', body: error instanceof Error ? error.message : String(error) });
@@ -78,16 +87,27 @@ export function DemoPage() {
     }
   }
 
-  async function run() {
-    let steps = plan;
-    if (planner === 'nova' && !novaPlan) {
-      const fresh = await planWithNova();
-      if (!fresh) return;
-      if (!fresh.length) {
-        toast.push({ tone: 'warn', title: 'Nothing to run', body: 'Amazon Nova found no registered operation that fits this request.' });
-        return;
-      }
+  async function run(text = request, opts: { spoken?: boolean } = {}) {
+    const talk = opts.spoken || speakReplies;
+    let steps: PlannedStep[] = text === request ? plan : planFromRequest(text);
+    if (planner === 'nova' && !(novaPlan && text === request)) {
+      if (talk) setVoice('thinking');
+      const fresh = await planWithNova(text);
+      if (!fresh) return setVoice('idle');
       steps = fresh;
+    }
+    if (!steps.length) {
+      toast.push({ tone: 'warn', title: 'Nothing to run', body: 'No registered operation fits this request. Try the thermostat, the task list, a message, or the security routine.' });
+      if (talk) {
+        setVoice('speaking');
+        await say(confirmation([]));
+      }
+      return setVoice('idle');
+    }
+    if (talk) {
+      setVoice('speaking');
+      await say(confirmation(steps));
+      setVoice('thinking');
     }
     setRunning(true);
     setLog([]);
@@ -96,12 +116,15 @@ export function DemoPage() {
     setRunError(null);
     try {
       await api.clearFaults();
-      if (inject) await api.armFault('security.activate_routine', 'error');
+      // Fail the last step, so every earlier step has something to rewind.
+      const target = steps.at(-1)!.operation;
+      if (inject && target !== 'security.disarm') await api.armFault(target, 'error');
       await state.reload({ quiet: true });
       // The MCP client SDK is loaded on demand to keep the console's initial bundle small.
       const { runAgent } = await import('../lib/agent');
-      const { executionId: id } = await runAgent({
-        request,
+      paused.current = null;
+      const { executionId: id, pausedAt } = await runAgent({
+        request: text,
         plan: steps.map(({ because: _b, ...s }) => ({ ...s, because: '' })),
         pacingMs: paced ? 650 : 0,
         onLog: (e) => setLog((xs) => [...xs, e]),
@@ -109,12 +132,92 @@ export function DemoPage() {
       });
       await refreshExecution(id);
       await state.reload({ quiet: true });
+      if (pausedAt !== null) paused.current = { executionId: id, steps, at: pausedAt, talk };
+      await speakOutcome(id, talk);
     } catch (error) {
       setRunError(error);
     } finally {
       setRunning(false);
+      setVoice('idle');
     }
   }
+
+  async function speakOutcome(id: string, talk: boolean) {
+    if (!talk) return;
+    setVoice('speaking');
+    const { text: summary } = await api.executionSummary(id);
+    await say(summary, { audioUrl: aws.data?.polly.enabled ? api.voiceUrl(id) : undefined });
+    setVoice('idle');
+  }
+
+  /** After a person approves, the agent sends the remaining steps over MCP, like a real agent waiting on a human. */
+  async function afterDecision(v: ExecutionView) {
+    setView(v);
+    void state.reload({ quiet: true });
+    const p = paused.current;
+    paused.current = null;
+    if (!p || v.execution.id !== p.executionId || v.execution.status !== 'running') return speakOutcome(v.execution.id, p?.talk ?? speakReplies);
+    setRunning(true);
+    try {
+      const { runAgent } = await import('../lib/agent');
+      const r = await runAgent({
+        request,
+        plan: p.steps.map(({ because: _b, ...s }) => ({ ...s, because: '' })),
+        pacingMs: paced ? 650 : 0,
+        onLog: (e) => setLog((xs) => [...xs, e]),
+        onExecution: () => undefined,
+        resume: { executionId: p.executionId, from: p.at + 1 },
+        idBase: log.length + 1000,
+      });
+      await refreshExecution(p.executionId);
+      await state.reload({ quiet: true });
+      if (r.pausedAt !== null) paused.current = { ...p, at: r.pausedAt };
+      await speakOutcome(p.executionId, p.talk);
+    } catch (error) {
+      setRunError(error);
+    } finally {
+      setRunning(false);
+      setVoice('idle');
+    }
+  }
+
+  function toggleListening() {
+    if (voice === 'listening') return stopListening.current?.();
+    hush();
+    setVoice('listening');
+    let heard = '';
+    stopListening.current = listen({
+      onInterim: (t) => setRequest(t),
+      onFinal: (t) => {
+        heard = t;
+        setRequest(t);
+      },
+      onError: (m) => {
+        toast.push({ tone: 'warn', title: 'Voice input', body: m });
+        setVoice('error');
+        setTimeout(() => setVoice('idle'), 1500);
+      },
+      onEnd: () => {
+        stopListening.current = null;
+        if (heard) {
+          setSpeakReplies(true);
+          void run(heard, { spoken: true });
+        } else setVoice((v) => (v === 'listening' ? 'idle' : v));
+      },
+    });
+  }
+
+  // Arriving from the landing page with ?request=…&autorun=1 runs it once.
+  const autoran = useRef(false);
+  useEffect(() => {
+    if (autoran.current || params.get('autorun') !== '1' || readOnly || !adapters.data || aws.loading) return;
+    autoran.current = true;
+    const next = new URLSearchParams(params);
+    next.delete('autorun');
+    next.delete('voice');
+    setParams(next, { replace: true });
+    void run(request);
+  }, [adapters.data, aws.loading]);
 
   return (
     <>
@@ -131,8 +234,8 @@ export function DemoPage() {
       <div role="note" className="mb-6 flex items-start gap-2 rounded-lg border border-border bg-surface-2/60 px-4 py-3 text-xs text-fg-2">
         <CircleAlert className="mt-0.5 size-4 shrink-0 text-fg-3" aria-hidden />
         <p>
-          <strong className="font-semibold text-fg">Browser simulation.</strong> This is not a live Alexa+ integration and controls no real device. The "voice" request is typed text
-          and the home is synthetic data. {planner === 'nova'
+          <strong className="font-semibold text-fg">Browser simulation.</strong> This is not a live Alexa+ integration and controls no real device; the home is synthetic data.
+          Speak or type a request. Voice uses your browser's built-in speech recognition and voices. {planner === 'nova'
             ? 'Amazon Nova on Bedrock proposes the steps; REWIND validates each one against the operation schema and decides ordering itself. Execution, recovery and verification never involve the model.'
             : 'The planner is a deterministic keyword matcher (no LLM).'}{' '}
           The MCP connection and every tool call are real.
@@ -147,17 +250,38 @@ export function DemoPage() {
         <div className="space-y-6">
           <Section title={<span className="flex items-center gap-2"><Mic className="size-4 text-fg-3" aria-hidden /> Request</span>}>
             <div className="space-y-4 p-4">
-              <label className="block">
-                <span className="sr-only">Request to the assistant</span>
-                <textarea
-                  value={request}
-                  onChange={(e) => setRequest(e.target.value)}
-                  rows={3}
-                  maxLength={500}
-                  disabled={running}
-                  className="w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-relaxed outline-none focus:border-accent"
-                />
-              </label>
+              <div className="flex items-start gap-4">
+                {canListen() && <VoiceOrb state={voice} onClick={toggleListening} disabled={running || planning || readOnly} />}
+                <label className="block min-w-0 flex-1">
+                  <span className="sr-only">Request to the assistant</span>
+                  <textarea
+                    value={request}
+                    onChange={(e) => setRequest(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !running) void run();
+                    }}
+                    rows={3}
+                    maxLength={500}
+                    disabled={running || voice === 'listening'}
+                    placeholder="Ask the house to do something, e.g. “set the heat to 18 and lock up”"
+                    className="w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-relaxed outline-none focus:border-accent"
+                  />
+                </label>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5" aria-label="Sample requests">
+                <span className="mr-1 text-xs text-fg-3">Try:</span>
+                {SAMPLE_PROMPTS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    disabled={running}
+                    onClick={() => setRequest(p.text)}
+                    className={cx('rounded-full border px-2.5 py-1 text-xs transition', request === p.text ? 'border-accent bg-accent-soft text-fg' : 'border-border text-fg-2 hover:border-border-strong hover:text-fg')}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
               <div role="radiogroup" aria-label="Planner" className="inline-flex rounded-lg border border-border bg-surface-2 p-0.5 text-xs">
                 {([
                   ['nova', 'Amazon Nova', novaReady],
@@ -180,7 +304,11 @@ export function DemoPage() {
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={inject} onChange={(e) => setInject(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />
-                  Inject failure: security hub rejects activation
+                  Inject a failure on the last step{plan.length ? `: ${opIndex.get(`${plan.at(-1)!.adapter_id}:${plan.at(-1)!.operation}`)?.title ?? plan.at(-1)!.operation}` : ''}
+                </label>
+                <label className="flex items-center gap-2 text-fg-2">
+                  <input type="checkbox" checked={speakReplies} onChange={(e) => setSpeakReplies(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />
+                  Speak replies
                 </label>
                 <label className="flex items-center gap-2 text-fg-2">
                   <input type="checkbox" checked={paced} onChange={(e) => setPaced(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />
@@ -188,7 +316,7 @@ export function DemoPage() {
                 </label>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary" onClick={run} loading={running || planning} disabled={(planner === 'rules' && !plan.length) || readOnly} icon={<PlayCircle className="size-4" aria-hidden />}>
+                <Button variant="primary" onClick={() => void run()} loading={running || planning} disabled={(planner === 'rules' && !plan.length) || readOnly} icon={<PlayCircle className="size-4" aria-hidden />}>
                   {planning ? 'Amazon Nova is planning…' : running ? 'Agent running…' : planner === 'nova' && !novaPlan ? 'Plan with Nova and run' : 'Run agent via MCP'}
                 </Button>
                 {planner === 'nova' && !novaPlan && (
@@ -271,7 +399,15 @@ export function DemoPage() {
         </div>
 
         <div className="space-y-6">
-          <Outcome view={view} running={running} error={runError} executionId={executionId} voice={Boolean(aws.data?.polly.enabled)} />
+          <Outcome
+            view={view}
+            running={running}
+            error={runError}
+            executionId={executionId}
+            voice={Boolean(aws.data?.polly.enabled)}
+            canDecide={can('admin')}
+            onDecided={(v) => void afterDecision(v)}
+          />
           <HomeState resources={state.data?.resources} faults={state.data?.faults ?? []} error={state.error} />
         </div>
       </div>
@@ -330,7 +466,23 @@ function McpRow({ e }: { e: McpLogEntry }) {
   );
 }
 
-function Outcome({ view, running, error, executionId, voice }: { view: ExecutionView | null; running: boolean; error: unknown; executionId: string | null; voice: boolean }) {
+function Outcome({
+  view,
+  running,
+  error,
+  executionId,
+  voice,
+  canDecide,
+  onDecided,
+}: {
+  view: ExecutionView | null;
+  running: boolean;
+  error: unknown;
+  executionId: string | null;
+  voice: boolean;
+  canDecide: boolean;
+  onDecided: (v: ExecutionView) => void;
+}) {
   if (error) return <ErrorState error={error} />;
   if (!view) {
     return (
@@ -360,7 +512,8 @@ function Outcome({ view, running, error, executionId, voice }: { view: Execution
           <span className="text-xs text-fg-3">{st?.help}</span>
         </div>
         {e.failureReason && <p className="rounded-md bg-bad-soft px-3 py-2 text-xs text-bad">{e.failureReason}</p>}
-        {voice && !running && !['pending', 'running', 'recovering'].includes(e.status) && <VoiceReport executionId={e.id} status={e.status} />}
+        {e.status === 'awaiting_approval' && <ApprovalPrompt view={view} canDecide={canDecide} onDecided={onDecided} />}
+        {voice && !running && !['pending', 'running', 'recovering', 'awaiting_approval'].includes(e.status) && <VoiceReport executionId={e.id} status={e.status} />}
         <ul className="space-y-2">
           {view.actions.map((a) => (
             <li key={a.id} className="flex items-start gap-2 text-sm">
@@ -594,6 +747,46 @@ function VoiceReport({ executionId, status }: { executionId: string; status: str
       </button>
       <p className="text-xs text-fg-2">{state === 'error' ? 'The voice report could not be played.' : 'REWIND\'s own outcome, read aloud by Amazon Polly. Written from recorded state, not by a model.'}</p>
       <audio ref={ref} onPlaying={() => setState('playing')} onEnded={() => setState('idle')} onError={() => setState('error')} preload="none" className="hidden" />
+    </div>
+  );
+}
+
+/** The human approval gate, inline: the visitor decides here instead of leaving for the inspector. */
+function ApprovalPrompt({ view, canDecide, onDecided }: { view: ExecutionView; canDecide: boolean; onDecided: (v: ExecutionView) => void }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState<'approve' | 'reject' | null>(null);
+  const action = view.actions.find((a) => a.status === 'awaiting_approval');
+  if (!action) return null;
+  const decide = async (kind: 'approve' | 'reject') => {
+    setBusy(kind);
+    try {
+      onDecided(kind === 'approve' ? await api.approve(view.execution.id, action.id) : await api.reject(view.execution.id, action.id, 'Rejected in the agent demo.'));
+    } catch (error) {
+      toast.push({ tone: 'bad', title: kind === 'approve' ? 'Could not approve' : 'Could not reject', body: error instanceof Error ? error.message : String(error) });
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <div className="rounded-md border border-warn/40 bg-warn-soft px-3 py-3 text-sm" role="group" aria-label="Approval needed">
+      <p className="font-medium text-fg">
+        Step {action.sequence}, {action.operationTitle}, needs a person to approve it.
+      </p>
+      <p className="mt-1 text-xs text-fg-2">
+        Policy requires approval because this effect {action.capability === 'irreversible' ? 'cannot be undone once it happens' : 'is sensitive'}. Agents can never approve their own actions.
+      </p>
+      {canDecide ? (
+        <div className="mt-3 flex gap-2">
+          <Button variant="primary" onClick={() => void decide('approve')} loading={busy === 'approve'} disabled={busy !== null}>
+            Approve and continue
+          </Button>
+          <Button onClick={() => void decide('reject')} loading={busy === 'reject'} disabled={busy !== null}>
+            Reject
+          </Button>
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-fg-3">Ask an admin to approve or reject it.</p>
+      )}
     </div>
   );
 }

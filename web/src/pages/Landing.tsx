@@ -7,6 +7,7 @@ import { CopyButton, cx, useToast } from '../components/ui';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { CountUp, Magnetic, Reveal, ScrollProgress, ScrollWords, SpotlightCard, Terminal, TiltIn, useActiveStep, WordRotator } from './landing/Bits';
+import { AskBox } from './landing/AskBox';
 import { Playground } from './landing/Playground';
 
 const STORY = [
@@ -65,6 +66,22 @@ export function LandingPage() {
       await api.guest();
       await refresh();
       nav('/onboarding');
+    } catch (e) {
+      toast.push({ tone: 'bad', title: 'Could not start the demo', body: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Run the visitor's own request in the live demo: a guest workspace, a real MCP agent, a failure on the last step. */
+  async function runRequest(request: string, opts: { voice: boolean }) {
+    const to = `/app/demo?${new URLSearchParams({ request, autorun: '1', ...(opts.voice ? { voice: '1' } : {}) })}`;
+    if (me) return nav(to);
+    setBusy(true);
+    try {
+      await api.guest();
+      await refresh();
+      nav(to);
     } catch (e) {
       toast.push({ tone: 'bad', title: 'Could not start the demo', body: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -198,7 +215,10 @@ export function LandingPage() {
             </a>
             </Magnetic>
           </motion.div>
-          <p className="mt-5 text-xs text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+            <AskBox onRun={runRequest} busy={busy} />
+          </motion.div>
+          <p className="mt-3 text-xs text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>
         </motion.div>
 
         {/* Playground */}
