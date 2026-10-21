@@ -1,5 +1,6 @@
 import { ArrowRight, Check, Eye, EyeOff, KeyRound, Launch } from '../components/icons';
 import { motion } from 'motion/react';
+import { RewindDial } from './landing/RewindDial';
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { Logo } from '../components/Logo';
@@ -34,11 +35,8 @@ function Shell({ title, subtitle, children, footer }: { title: string; subtitle:
         </motion.div>
       </div>
       <aside className="dark relative hidden overflow-clip border-l border-white/10 bg-[#050608] text-white lg:block" aria-hidden>
-        <div className="orb absolute -right-40 -top-40 size-[38rem] rounded-full opacity-35 blur-[100px]" />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 overflow-hidden">
-          <div className="floor absolute -inset-x-1/2 top-0 h-[200%]" />
-        </div>
-        <div className="noise absolute inset-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(70%_50%_at_100%_0%,rgba(79,70,229,.3),transparent_70%),radial-gradient(60%_40%_at_0%_100%,rgba(6,182,212,.14),transparent_70%)]" />
+        <RewindDial className="absolute -bottom-[22rem] -right-[18rem] w-[52rem] opacity-80" />
         <div className="relative flex h-full flex-col justify-center px-14">
           <p className="text-[2.4rem] font-semibold leading-[1.08] tracking-[-0.035em]">
             {['Every change recorded.', 'Every failure contained.'].map((line, i) => (

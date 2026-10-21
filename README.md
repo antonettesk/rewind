@@ -1,5 +1,16 @@
 # REWIND
 
+**Live: [getrewind.onrender.com](https://getrewind.onrender.com)** · no signup, nothing to install.
+
+### Try it in 60 seconds
+
+1. Open the site and type (or say) your own request in **Ask your home**, for example *"turn the heat down to 18, remind me to water the plants, then lock up"*.
+2. **Run it.** A real MCP agent carries out each step through REWIND, and the last step is made to fail on purpose.
+3. Watch REWIND stop, undo the earlier steps newest-first, and **read every resource back** to prove it was restored.
+4. Try **Tell the family**: a message needs your approval, and can't be unsent, so REWIND tells you exactly that instead of claiming a rollback.
+5. Try **Try something risky**: the default policy blocks *disarm* before anything happens.
+
+
 **AI can make mistakes. REWIND makes those mistakes visible, contained and recoverable, whenever recovery is actually possible.**
 
 REWIND is an execution-control layer between a tool-using AI agent and the tools it is allowed to use. It records the state of every resource before an agent changes it, executes operations only through registered adapters, halts on the first failure, runs registered compensating actions in reverse dependency order, and then **reads every resource back to verify** that it was restored. When an effect cannot be undone, such as a sent message, REWIND says so instead of pretending.

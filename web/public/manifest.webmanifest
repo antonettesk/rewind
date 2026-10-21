@@ -1,0 +1,14 @@
+{
+  "name": "REWIND",
+  "short_name": "REWIND",
+  "description": "Undo for AI agents, with proof. Record, contain, compensate and verify every tool call.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050608",
+  "theme_color": "#050608",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

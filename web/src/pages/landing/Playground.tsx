@@ -160,7 +160,7 @@ export function Playground() {
   const pct = (i: number) => ((i + 0.5) / n) * 100;
 
   return (
-    <div className="relative overflow-clip rounded-3xl border border-white/10 bg-[#0b0c10]/80 p-4 shadow-2xl shadow-indigo-950/40 backdrop-blur-xl sm:p-6">
+    <div className="relative overflow-clip rounded-3xl border border-white/10 bg-[#0b0c10] p-4 shadow-2xl shadow-indigo-950/40 sm:p-6">
       <div className="pointer-events-none absolute -inset-px rounded-3xl bg-[linear-gradient(120deg,rgba(129,140,248,.35),transparent_30%,transparent_70%,rgba(34,211,238,.35))] opacity-60 [mask:linear-gradient(#000,#000)_content-box,linear-gradient(#000,#000)] [mask-composite:exclude] p-px" aria-hidden />
 
       {/* Header */}
@@ -264,7 +264,7 @@ export function Playground() {
       </div>
 
       {/* Track */}
-      <div className="relative mt-6 overflow-x-auto pb-2">
+      <div className="relative mt-3 overflow-x-auto pb-2 pt-3">
         <div className="relative mx-auto min-w-[calc(var(--n)*100px)] sm:min-w-[calc(var(--n)*150px)]" style={{ ['--n' as string]: n }}>
           <div className="absolute left-0 right-0 top-[32px] h-px sm:top-[44px] bg-white/10" aria-hidden />
           <AnimatePresence>

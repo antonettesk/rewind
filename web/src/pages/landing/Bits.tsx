@@ -83,7 +83,7 @@ export function CountUp({ to, suffix = '', decimals = 0, className }: { to: numb
 /** A product shot that tilts up from the floor and settles flat as it scrolls in. */
 export function TiltIn({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() || (typeof window !== 'undefined' && !window.matchMedia('(min-width: 1024px)').matches);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 1', 'start 0.5'] });
   const smooth = useSpring(scrollYProgress, { stiffness: 180, damping: 32, mass: 0.3 });
   const rotateX = useTransform(smooth, [0, 1], [24, 0]);

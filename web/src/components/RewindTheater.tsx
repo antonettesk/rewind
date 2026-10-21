@@ -173,7 +173,7 @@ export function RewindTheater({ view, stepMs = 520, autoReplay = true, compact =
         </div>
 
         {/* Track */}
-        <div className="overflow-x-auto pb-1">
+        <div className="overflow-x-auto pb-1 pt-3">
           <div className="relative mx-auto" style={{ minWidth: `${Math.max(actions.length, 1) * 168}px` }}>
             <div className="absolute left-0 right-0 top-[38px] h-[3px] rounded-full bg-border" aria-hidden />
             <motion.div

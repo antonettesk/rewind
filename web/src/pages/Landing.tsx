@@ -8,6 +8,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { CountUp, Magnetic, Reveal, ScrollProgress, ScrollWords, SpotlightCard, Terminal, TiltIn, useActiveStep, WordRotator } from './landing/Bits';
 import { AskBox } from './landing/AskBox';
+import { RewindDial } from './landing/RewindDial';
 import { Playground } from './landing/Playground';
 
 const STORY = [
@@ -48,7 +49,6 @@ export function LandingPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 160]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.94]);
-  const orbScale = useTransform(scrollYProgress, [0, 0.6], [1, 1.35]);
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 24));
@@ -100,15 +100,15 @@ export function LandingPage() {
       }}
     >
       {/* Cursor spotlight */}
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(600px_circle_at_var(--mx,50%)_var(--my,20%),rgba(99,102,241,.10),transparent_40%)]" aria-hidden />
+      <div className="pointer-events-none fixed inset-0 z-0 hidden bg-[radial-gradient(600px_circle_at_var(--mx,50%)_var(--my,20%),rgba(99,102,241,.10),transparent_40%)] [@media(hover:hover)_and_(pointer:fine)]:block" aria-hidden />
 
       <ScrollProgress />
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 px-3">
         <div
           className={cx(
-            'mx-auto mt-3 flex items-center justify-between rounded-2xl border px-4 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-500 ease-[cubic-bezier(.16,1,.3,1)] sm:px-5',
-            scrolled ? 'h-12 max-w-4xl border-white/10 bg-black/55 shadow-[0_8px_32px_-12px_rgba(0,0,0,.8)]' : 'h-14 max-w-6xl border-transparent bg-transparent',
+            'mx-auto mt-3 flex items-center justify-between rounded-2xl border px-4 transition-all duration-500 ease-[cubic-bezier(.16,1,.3,1)] sm:px-5 lg:backdrop-blur-xl',
+            scrolled ? 'h-12 max-w-4xl border-white/10 bg-[#07080b]/90 shadow-[0_8px_32px_-12px_rgba(0,0,0,.8)] lg:bg-black/55' : 'h-14 max-w-6xl border-transparent bg-transparent',
           )}
         >
           <Link to="/" aria-label="REWIND home">
@@ -143,23 +143,17 @@ export function LandingPage() {
       {/* Hero */}
       <section ref={hero} className="relative z-10 overflow-clip pt-32 sm:pt-40">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="aurora absolute -left-1/4 -top-1/3 h-[70vh] w-[70vw] rounded-full bg-indigo-600/25 blur-[120px]" />
-          <div className="aurora-2 absolute -right-1/4 top-0 h-[60vh] w-[60vw] rounded-full bg-cyan-500/15 blur-[120px]" />
-          <motion.div style={{ scale: orbScale, x: '-50%' }} className="absolute left-1/2 top-24 size-[min(52rem,120vw)]">
-            <div className="orb absolute inset-0 rounded-full opacity-40 blur-[90px]" />
-            <div className="absolute inset-[18%] rounded-full bg-[#050608] blur-2xl" />
-          </motion.div>
-          <div className="absolute inset-x-0 top-[46%] h-[60%] overflow-hidden">
-            <div className="floor absolute -inset-x-1/2 top-0 h-[200%]" />
-          </div>
-          <div className="noise absolute inset-0" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_15%_0%,rgba(79,70,229,.28),transparent_70%),radial-gradient(50%_40%_at_90%_10%,rgba(6,182,212,.16),transparent_70%)]" />
+          <RewindDial className="absolute left-1/2 top-10 w-[min(68rem,170vw)] -translate-x-1/2 opacity-60 sm:top-4 sm:opacity-90" />
+          {/* Fade the dial into the page so it never competes with the playground. */}
+          <div className="absolute inset-x-0 top-[38rem] h-[40rem] bg-[linear-gradient(to_bottom,transparent,#050608_55%)]" />
         </div>
         <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
           <motion.a
             href="#playground"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur hover:text-white"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0b0c10]/80 px-3 py-1 text-xs text-white/70 hover:text-white"
           >
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -172,7 +166,7 @@ export function LandingPage() {
             <span className="sr-only">Agents break things. </span>
             <motion.span
               aria-hidden
-              className="block bg-[linear-gradient(180deg,#fff,rgba(255,255,255,.72))] bg-clip-text text-transparent"
+              className="-mb-[0.16em] block bg-[linear-gradient(180deg,#fff,rgba(255,255,255,.72))] bg-clip-text pb-[0.16em] text-transparent"
               initial={{ opacity: 0, y: 28, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -210,7 +204,7 @@ export function LandingPage() {
             </button>
             </Magnetic>
             <Magnetic>
-            <a href="#playground" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/15 bg-white/[.04] px-6 text-sm font-semibold text-white backdrop-blur-xl transition-colors hover:border-white/30 hover:bg-white/10">
+            <a href="#playground" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0b0c10]/70 px-6 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10">
               Break something first <ChevronDown className="size-4" aria-hidden />
             </a>
             </Magnetic>
@@ -282,7 +276,7 @@ export function LandingPage() {
             <div className="sticky top-32">
               <div className="beam relative overflow-hidden rounded-3xl border border-white/10 bg-[#0b0c10] p-8">
                 <div className="scan pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(103,232,249,.07),transparent)]" aria-hidden />
-                <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-indigo-500/20 blur-3xl" aria-hidden />
+                <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-[radial-gradient(closest-side,rgba(99,102,241,.25),transparent)]" aria-hidden />
                 <motion.div key={story.active} initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
                     <div className="flex items-center gap-3">
                       <span className="flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6366f1,#06b6d4)]">
@@ -436,7 +430,7 @@ export function LandingPage() {
       <section className="relative z-10 overflow-hidden px-4 pb-24 sm:px-6">
         <Reveal className="beam relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#07080b] px-6 py-20 text-center sm:px-12">
           <div className="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(165,180,252,.9),transparent)]" aria-hidden />
-          <div className="orb pointer-events-none absolute -bottom-[28rem] left-1/2 size-[40rem] -translate-x-1/2 rounded-full opacity-30 blur-[100px]" aria-hidden />
+          <RewindDial className="pointer-events-none absolute -bottom-[26rem] left-1/2 w-[46rem] -translate-x-1/2 opacity-60" />
           <RewindMark className="relative mx-auto size-7 text-indigo-200" aria-hidden />
           <h2 className="relative mt-5 text-3xl font-semibold tracking-tight sm:text-5xl">Watch a failure get rewound in under a minute.</h2>
           <p className="relative mx-auto mt-4 max-w-xl text-white/60">A synthetic smart home, a real MCP connection, a deliberately injected failure. No keys, no accounts, no model.</p>

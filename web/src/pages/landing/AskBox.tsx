@@ -56,7 +56,7 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
           e.preventDefault();
           submit();
         }}
-        className="beam flex items-center gap-3 rounded-full border border-white/10 bg-white/[.04] p-2 pl-2 shadow-[0_20px_60px_-20px_rgba(99,102,241,.6)] backdrop-blur-xl transition-colors focus-within:border-white/30 focus-within:bg-white/[.07]"
+        className="beam flex items-center gap-3 rounded-full border border-white/10 bg-[#0b0c10]/85 p-2 pl-2 shadow-[0_20px_60px_-20px_rgba(99,102,241,.6)] transition-colors focus-within:border-white/30 focus-within:bg-white/[.07]"
       >
         {canListen() ? <VoiceOrb state={voice} onClick={mic} disabled={busy} /> : <span className="w-2" />}
         <label className="min-w-0 flex-1">
