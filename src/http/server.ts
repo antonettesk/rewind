@@ -403,6 +403,14 @@ export function createHttpApp(app: App) {
     res.json({ text: spokenSummary(view, (key) => app.registry.describe().find((o) => o.key === key)?.title ?? key) });
   });
 
+  // Amazon Polly reads a short assistant line (the confirmation before acting). Members only, capped and cached.
+  api.post('/voice', role('member'), async (req, res) => {
+    const body = z.object({ text: z.string().trim().min(1).max(320) }).strict().parse(req.body);
+    const audio = await app.aws.speakText(req.rewind!.workspaceId, body.text);
+    res.setHeader('Cache-Control', 'no-store');
+    res.type('audio/mpeg').send(audio);
+  });
+
   // Amazon Polly reads Rewind's deterministic summary of the execution.
   api.get('/executions/:id/voice.mp3', async (req, res) => {
     const view = await app.queries.executionView(req.rewind!.workspaceId, String(req.params.id));

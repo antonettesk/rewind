@@ -38,6 +38,12 @@ export interface NovaPlan {
   usage: { inputTokens: number; outputTokens: number } | null;
 }
 
+async function audioBytes(url: string, init: RequestInit = {}): Promise<ArrayBuffer> {
+  const r = await fetch(url, { credentials: 'same-origin', ...init });
+  if (!r.ok) throw new Error(`Voice request failed (${r.status}).`);
+  return r.arrayBuffer();
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -268,6 +274,10 @@ export const api = {
   aws: () => request<AwsStatus>('GET', '/aws'),
   novaPlan: (requestText: string) => request<NovaPlan>('POST', '/agent/plan', { request: requestText }),
   executionSummary: (executionId: string) => request<{ text: string }>('GET', `/executions/${encodeURIComponent(executionId)}/summary`),
+  /** Amazon Polly audio for a short assistant line (only when Polly is configured). */
+  voiceBytes: (text: string) => audioBytes('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }),
+  /** Amazon Polly audio for an execution's outcome. */
+  outcomeBytes: (executionId: string) => audioBytes(`/api/executions/${encodeURIComponent(executionId)}/voice.mp3`),
   voiceUrl: (executionId: string) => `/api/executions/${encodeURIComponent(executionId)}/voice.mp3`,
   reset: (clearHistory: boolean) => request<{ executionsDeleted: number }>('POST', '/demo/reset', { confirm: 'RESET', clearHistory }),
   purge: () => request<{ executions: number }>('POST', '/retention/purge', { confirm: 'PURGE' }),

@@ -36,14 +36,14 @@ export function VoiceOrb({ state, onClick, disabled, size = 'md', level = 0 }: {
           state === 'error' ? 'bg-rose-500' : 'orb',
           state === 'thinking' && '[animation-duration:1.4s]',
           state === 'listening' && '[animation-duration:3s]',
-          state === 'speaking' && 'animate-pulse',
+          state === 'speaking' && level === 0 && 'animate-pulse',
         )}
       />
       <span aria-hidden className="absolute inset-[3px] rounded-full bg-[radial-gradient(circle_at_50%_35%,#23252e,#0b0c10_70%)] shadow-[inset_0_1px_0_rgba(255,255,255,.08)]" />
       {/* Glow */}
       <span
         aria-hidden
-        style={state === 'listening' ? { transform: `scale(${1 + level * 0.35})`, opacity: 0.35 + level * 0.65 } : undefined}
+        style={state === 'listening' || (state === 'speaking' && level > 0) ? { transform: `scale(${1 + level * 0.35})`, opacity: 0.35 + level * 0.65 } : undefined}
         className={cx(
           'orb absolute -inset-2 -z-10 rounded-full blur-xl transition-[opacity,transform] duration-100',
           state === 'speaking' ? 'opacity-70' : state === 'thinking' ? 'opacity-40' : state === 'listening' ? '' : 'opacity-0',

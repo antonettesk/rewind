@@ -3,7 +3,7 @@ import { ArrowRight } from '../../components/icons';
 import { cx } from '../../components/ui';
 import { VoiceOrb, type VoiceState } from '../../components/VoiceOrb';
 import { planFromRequest, SAMPLE_PROMPTS } from '../../lib/planner';
-import { canListen, listen } from '../../lib/voice';
+import { canListen, chime, listen } from '../../lib/voice';
 
 /**
  * "Ask your home": type or say a request. The deterministic planner previews
@@ -31,6 +31,7 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
     if (voice === 'listening') return stop.current?.();
     if (voice === 'thinking') return;
     setHint(null);
+    chime('listen');
     setVoice('listening');
     let heard = '';
     stop.current = listen({
@@ -41,8 +42,10 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
       onFinal: (t) => {
         heard = t;
         setText(t);
+        chime('done');
       },
       onError: (m) => {
+        chime('error');
         setHint(m);
         setVoice('error');
         setTimeout(() => setVoice('idle'), 1500);

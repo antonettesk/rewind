@@ -10,7 +10,7 @@
  * A watchdog switches from "browser" to "device" if the browser engine goes
  * quiet, so the ring can never hang on "Listening…".
  *
- * Speech out uses Amazon Polly when configured, otherwise the browser's voices.
+ * Speech out lives in ./speak (Amazon Polly when configured, otherwise the best browser voice).
  */
 import { record, transcribe, warmUp } from './recorder';
 
@@ -55,7 +55,6 @@ export function preferredEngine(): Engine {
 }
 
 export const canListen = () => typeof navigator !== 'undefined' && (Boolean(navigator.mediaDevices?.getUserMedia) || recognitionCtor() !== null);
-export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
 const ERRORS = {
   notAllowed: 'Microphone access was blocked. Allow it in the address bar, or type your request.',
@@ -214,59 +213,7 @@ function listenBrowser(h: ListenHandlers): () => void {
   };
 }
 
-let currentAudio: HTMLAudioElement | null = null;
-
-/** Stop anything that is speaking. */
-export function hush() {
-  if (canSpeak()) window.speechSynthesis.cancel();
-  currentAudio?.pause();
-  currentAudio = null;
-}
-
-function pickVoice(): SpeechSynthesisVoice | undefined {
-  const voices = window.speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en'));
-  const prefer = [/natural/i, /neural/i, /samantha/i, /aria|jenny|ava/i, /google us english/i];
-  for (const re of prefer) {
-    const v = voices.find((x) => re.test(x.name));
-    if (v) return v;
-  }
-  return voices.find((v) => v.lang === 'en-US') ?? voices[0];
-}
-
-/**
- * Say something. Uses an MP3 URL (Amazon Polly) when given, otherwise the
- * browser's own voices. Resolves when speech ends; never rejects.
- */
-export function say(text: string, opts: { audioUrl?: string } = {}): Promise<void> {
-  hush();
-  return new Promise((resolve) => {
-    if (opts.audioUrl) {
-      const a = new Audio(opts.audioUrl);
-      currentAudio = a;
-      a.onended = () => resolve();
-      a.onerror = () => void sayWithBrowser(text).then(resolve);
-      a.play().catch(() => void sayWithBrowser(text).then(resolve));
-      return;
-    }
-    void sayWithBrowser(text).then(resolve);
-  });
-}
-
-function sayWithBrowser(text: string): Promise<void> {
-  return new Promise((resolve) => {
-    if (!canSpeak() || !text.trim()) return resolve();
-    const u = new SpeechSynthesisUtterance(text);
-    const v = pickVoice();
-    if (v) u.voice = v;
-    u.rate = 1.02;
-    u.pitch = 1;
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
-    // Some browsers never fire onend for long utterances; never leave the caller waiting.
-    setTimeout(resolve, Math.min(30_000, 2_000 + text.length * 90));
-    window.speechSynthesis.speak(u);
-  });
-}
+export { bestVoice, canSpeak, chime, hush, say } from './speak';
 
 /** What the assistant says before acting, built from the validated plan. */
 export function confirmation(steps: { operation: string; input: Record<string, unknown> }[]): string {

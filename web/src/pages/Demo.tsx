@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router';
 import { api, subscribe, type AdapterView, type ExecutionView, type NovaPlan, type SimResource } from '../lib/api';
 import type { McpLogEntry } from '../lib/agent';
 import { planFromRequest, SAMPLE_PROMPTS, type PlannedStep } from '../lib/planner';
-import { canListen, confirmation, hush, listen, say } from '../lib/voice';
+import { bestVoice, canListen, chime, confirmation, hush, listen, say } from '../lib/voice';
 import { VoiceOrb, type VoiceState } from '../components/VoiceOrb';
 import { useRole } from '../lib/auth';
 import { RewindTheater } from '../components/RewindTheater';
@@ -23,7 +23,11 @@ export function DemoPage() {
   const [voice, setVoice] = useState<VoiceState>('idle');
   const [level, setLevel] = useState(0);
   const [voiceStatus, setVoiceStatus] = useState<string | null>(null);
-  const [speakReplies, setSpeakReplies] = useState(() => params.get('voice') === '1');
+  const [speakReplies, setSpeakReplies] = useState(true);
+  const [browserVoice, setBrowserVoice] = useState<string | null>(null);
+  useEffect(() => {
+    void bestVoice().then((v) => setBrowserVoice(v ? v.name.replace(/^Microsoft /, '').replace(/ - English \(.*\)$/, '').replace(/ Online \(Natural\)$/, ' (Natural)') : null));
+  }, []);
   const stopListening = useRef<(() => void) | null>(null);
   // A run paused at the approval gate: the agent resumes from the next step once a person approves.
   const paused = useRef<{ executionId: string; steps: PlannedStep[]; at: number; talk: boolean } | null>(null);
@@ -102,13 +106,13 @@ export function DemoPage() {
       toast.push({ tone: 'warn', title: 'Nothing to run', body: 'No registered operation fits this request. Try the thermostat, the task list, a message, or the security routine.' });
       if (talk) {
         setVoice('speaking');
-        await say(confirmation([]));
+        await speakLine(confirmation([]));
       }
       return setVoice('idle');
     }
     if (talk) {
       setVoice('speaking');
-      await say(confirmation(steps));
+      await speakLine(confirmation(steps));
       setVoice('thinking');
     }
     setRunning(true);
@@ -148,7 +152,7 @@ export function DemoPage() {
     if (!talk) return;
     setVoice('speaking');
     const { text: summary } = await api.executionSummary(id);
-    await say(summary, { audioUrl: aws.data?.polly.enabled ? api.voiceUrl(id) : undefined });
+    await say(summary, { fetchAudio: aws.data?.polly.enabled ? () => api.outcomeBytes(id) : undefined, onLevel: setLevel });
     setVoice('idle');
   }
 
@@ -183,10 +187,16 @@ export function DemoPage() {
     }
   }
 
+  /** A short assistant line: Amazon Polly when configured, otherwise the best browser voice. */
+  function speakLine(text: string) {
+    return say(text, { fetchAudio: aws.data?.polly.enabled ? () => api.voiceBytes(text) : undefined, onLevel: setLevel });
+  }
+
   function toggleListening() {
     if (voice === 'listening') return stopListening.current?.();
     if (voice === 'thinking') return;
     hush();
+    chime('listen');
     setVoice('listening');
     let heard = '';
     stopListening.current = listen({
@@ -197,8 +207,10 @@ export function DemoPage() {
       onFinal: (t) => {
         heard = t;
         setRequest(t);
+        chime('done');
       },
       onError: (m) => {
+        chime('error');
         toast.push({ tone: 'warn', title: 'Voice input', body: m });
         setVoice('error');
         setTimeout(() => setVoice('idle'), 1500);
@@ -322,6 +334,9 @@ export function DemoPage() {
                 <label className="flex items-center gap-2 text-fg-2">
                   <input type="checkbox" checked={speakReplies} onChange={(e) => setSpeakReplies(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />
                   Speak replies
+                  <span className="text-xs text-fg-3">
+                    {aws.data?.polly.enabled ? `· Amazon Polly, ${aws.data.polly.voice}` : browserVoice ? `· ${browserVoice}` : '· no voice installed'}
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 text-fg-2">
                   <input type="checkbox" checked={paced} onChange={(e) => setPaced(e.target.checked)} disabled={running} className="size-4 accent-[var(--accent)]" />

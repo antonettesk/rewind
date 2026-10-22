@@ -198,9 +198,13 @@ export class AwsFeatures {
 
   /** Synthesize Rewind's deterministic summary of an execution as MP3. */
   async speak(workspaceId: string, view: ExecutionView): Promise<Buffer> {
+    return this.speakText(workspaceId, spokenSummary(view, (key) => this.registry.describe().find((o) => o.key === key)?.title ?? key));
+  }
+
+  /** Synthesize a short assistant line (confirmations, prompts). Same caps and cache as outcome reports. */
+  async speakText(workspaceId: string, text: string): Promise<Buffer> {
     if (!this.polly) throw new DomainError('FORBIDDEN', 'Amazon Polly is not configured on this server.');
-    const text = spokenSummary(view, (key) => this.registry.describe().find((o) => o.key === key)?.title ?? key);
-    const cacheKey = `${workspaceId}|${view.execution.id}|${text}`;
+    const cacheKey = `${workspaceId}|${text}`;
     const hit = this.speechCache.get(cacheKey);
     if (hit) return hit;
     this.spend('speech', workspaceId, this.config.dailySpeechPerWorkspace);
