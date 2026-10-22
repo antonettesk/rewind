@@ -2,6 +2,8 @@
 
 **Live: [getrewind.onrender.com](https://getrewind.onrender.com)** · no signup, nothing to install.
 
+> **Hackathon judges:** the full submission pack (description, testing steps, product feedback, friction log, video script) is in [`docs/submission/`](docs/submission/README.md).
+
 ### Try it in 60 seconds
 
 1. Open the site and type (or say) your own request in **Ask your home**, for example *"turn the heat down to 18, remind me to water the plants, then lock up"*.
