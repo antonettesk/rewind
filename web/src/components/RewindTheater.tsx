@@ -141,7 +141,7 @@ export function RewindTheater({ view, stepMs = 520, autoReplay = true, compact =
       <div className="relative">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-xs">
-            <span className={cx('inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold uppercase tracking-wider', rewindStarted ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-fg-2')}>
+            <span className={cx('inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold', rewindStarted ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-fg-2')}>
               {rewindStarted ? <RotateCcw className="size-3" aria-hidden /> : <Launch className="size-3" aria-hidden />}
               {rewindStarted ? 'Rewind' : 'Forward'}
             </span>

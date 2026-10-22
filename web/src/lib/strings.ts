@@ -35,7 +35,7 @@ export const RECOVERY_OUTCOME: Record<string, { label: string; tone: Tone; help:
   recovery_available: { label: 'Recovery available', tone: 'accent', help: 'A registered compensation exists and has not been run.' },
   recovery_failed: { label: 'Recovery failed', tone: 'bad', help: 'Compensation was attempted but restoration could not be verified.' },
   recovery_unavailable: { label: 'Recovery unavailable', tone: 'bad', help: 'No safe way to reverse this effect. It remains.' },
-  manual_review: { label: 'Needs manual review', tone: 'warn', help: 'REWIND cannot safely decide; a person must look.' },
+  manual_review: { label: 'Needs manual review', tone: 'warn', help: 'Rewind cannot safely decide; a person must look.' },
 };
 
 export const ATTEMPT_STATUS: Record<string, { label: string; tone: Tone }> = {

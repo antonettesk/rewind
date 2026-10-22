@@ -1,6 +1,6 @@
 /**
  * The landing-page playground. Visitors configure a failure and press Run; the
- * outcome is computed by REWIND's real, deterministic recovery planner
+ * outcome is computed by Rewind's real, deterministic recovery planner
  * (src/domain/recovery-plan.ts), the same code the server engine uses. Only the
  * adapters are simulated (in the browser): which writes succeed, fail, time out,
  * or get edited by someone else.
@@ -129,7 +129,7 @@ export function Playground() {
       fr.push({ log: `⟲ compensate #${c.sequence} ${s.title} (compare-and-set on written version)`, tone: 'accent', set: [[i, 'rewinding']], head: { at: i, dir: 'back' } });
       if (drift.has(s.key)) {
         final.set(s.key, 'conflict');
-        fr.push({ log: `⚠ #${c.sequence} version moved since REWIND wrote it → refuse to overwrite → manual review`, tone: 'warn', set: [[i, 'conflict']] });
+        fr.push({ log: `⚠ #${c.sequence} version moved since Rewind wrote it → refuse to overwrite → manual review`, tone: 'warn', set: [[i, 'conflict']] });
         transitiveDependencies(plannable, c.sequence).forEach((d) => blocked.add(d));
       } else {
         final.set(s.key, 'verified');

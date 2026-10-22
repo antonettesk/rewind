@@ -81,9 +81,9 @@ export class TeamService {
       await this.mailer.send(
         emailTemplate({
           to: email,
-          subject: `${ctx.user.name} invited you to ${ctx.workspace.name} on REWIND`,
-          heading: `Join ${ctx.workspace.name} on REWIND`,
-          body: [`${ctx.user.name} invited you to join "${ctx.workspace.name}" as ${role}.`, 'REWIND records, contains and verifiably recovers what AI agents do with your tools.'],
+          subject: `${ctx.user.name} invited you to ${ctx.workspace.name} on Rewind`,
+          heading: `Join ${ctx.workspace.name} on Rewind`,
+          body: [`${ctx.user.name} invited you to join "${ctx.workspace.name}" as ${role}.`, 'Rewind records, contains and verifiably recovers what AI agents do with your tools.'],
           action: { label: 'Accept invitation', url },
           footnote: 'This link works once and expires in 7 days. If you were not expecting it, you can ignore this email.',
         }),
@@ -146,7 +146,7 @@ export class TeamService {
     await this.mailer.send(
       emailTemplate({
         to: user.email!,
-        subject: 'Reset your REWIND password',
+        subject: 'Reset your Rewind password',
         heading: 'Reset your password',
         body: [`Someone asked to reset the password for ${user.email}.`, 'The link below works once and expires in 30 minutes. Resetting signs out every session and unlocks the account.'],
         action: { label: 'Choose a new password', url },

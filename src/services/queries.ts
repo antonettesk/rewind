@@ -196,7 +196,7 @@ export function deriveOutcome(a: Action, capability: string, attempts: RecoveryA
     case 'running':
       return { outcome: 'recovery_pending', reason: 'Compensation in progress; not yet verified.' };
     case 'conflict':
-      return { outcome: 'manual_review', reason: last.errorMessage ?? 'The resource changed after REWIND wrote it.' };
+      return { outcome: 'manual_review', reason: last.errorMessage ?? 'The resource changed after Rewind wrote it.' };
     case 'unverified':
       return { outcome: 'recovery_failed', reason: last.errorMessage ?? 'Compensation ran but verification did not confirm restoration.' };
     default:

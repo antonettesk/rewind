@@ -99,7 +99,7 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
           </p>
         ) : plan.length ? (
           <p className="flex flex-wrap items-center gap-1.5 text-white/50" aria-live="polite">
-            <span>REWIND will run:</span>
+            <span>Rewind will run:</span>
             {plan.map((s, i) => (
               <span key={s.operation} className={cx('rounded-full border px-2 py-0.5 font-mono text-[10px]', i === plan.length - 1 ? 'border-rose-400/40 text-rose-200' : 'border-white/15 text-white/70')}>
                 {s.operation}

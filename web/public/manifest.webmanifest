@@ -1,6 +1,6 @@
 {
-  "name": "REWIND",
-  "short_name": "REWIND",
+  "name": "Rewind",
+  "short_name": "Rewind",
   "description": "Undo for AI agents, with proof. Record, contain, compensate and verify every tool call.",
   "start_url": "/",
   "display": "standalone",

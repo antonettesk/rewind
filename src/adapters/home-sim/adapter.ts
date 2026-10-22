@@ -85,7 +85,7 @@ export function createHomeSimAdapter(store: HomeSimStore, opts: { timeoutMs?: nu
           await sleep(op.timeoutMs * 4, ctx.signal);
         }
         if (fault === 'drift' && spec.drift) {
-          // Someone else changes the resource after REWIND did, before any recovery runs.
+          // Someone else changes the resource after Rewind did, before any recovery runs.
           store.write(ws, ref.type, ref.id, written.version, spec.drift(next), 'external:household-member');
         }
         return { resource: `${ref.type}/${ref.id}`, version: written.version, state: next };
@@ -99,7 +99,7 @@ export function createHomeSimAdapter(store: HomeSimStore, opts: { timeoutMs?: nu
         const current = store.read(ws, ref.type, ref.id);
         const expected = writtenVersion ?? after?.version;
         if (expected !== undefined && current.version !== expected) {
-          throw new AdapterError('STATE_CONFLICT', `${ref.type}/${ref.id} changed after REWIND wrote it (v${expected} → v${current.version}).`, 'none');
+          throw new AdapterError('STATE_CONFLICT', `${ref.type}/${ref.id} changed after Rewind wrote it (v${expected} → v${current.version}).`, 'none');
         }
         const silent = store.takeFault(ws, spec.name, ['silent_compensation_failure']);
         // A buggy handler that reports success but writes the wrong thing. Verification must catch this.
@@ -193,7 +193,7 @@ export function createHomeSimAdapter(store: HomeSimStore, opts: { timeoutMs?: nu
       permissions: ['home.notify.send'],
       resource: outbox,
       capability: 'irreversible',
-      recoverySummary: 'Irreversible: once delivered, a message cannot be recalled. REWIND reports it as an unresolved side effect.',
+      recoverySummary: 'Irreversible: once delivered, a message cannot be recalled. Rewind reports it as an unresolved side effect.',
       apply: (cur, input) => ({ ...cur, sent: [...((cur.sent as unknown[]) ?? []), { text: input?.text ?? '', channel: 'household' }] }),
       failure: { code: 'NOTIFY_FAILED', message: 'The simulated messaging service rejected the message. Nothing was sent.' },
     }),

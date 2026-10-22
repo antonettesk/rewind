@@ -14,7 +14,7 @@ const ENV: [string, string, string][] = [
   ['REWIND_METRICS_TOKEN', '(unset)', 'Bearer token for /metrics when not on loopback.'],
   ['REWIND_ALLOW_PRIVATE_WEBHOOKS', 'loopback: true', 'Allow webhook targets on private addresses (development only).'],
   ['REWIND_RESEND_API_KEY', '(unset)', 'Resend API key (re_…). When set, invitations, password resets and security alerts are emailed.'],
-  ['REWIND_MAIL_FROM', 'REWIND <onboarding@resend.dev>', 'Sender. Use an address on a domain verified in Resend.'],
+  ['REWIND_MAIL_FROM', 'Rewind <onboarding@resend.dev>', 'Sender. Use an address on a domain verified in Resend.'],
   ['REWIND_SSO_GOOGLE_CLIENT_ID / _SECRET', '(unset)', 'Enable Sign in with Google. Redirect URI: <public URL>/api/auth/sso/google/callback'],
   ['REWIND_SSO_MICROSOFT_CLIENT_ID / _SECRET / _TENANT', '(unset)', 'Enable Sign in with Microsoft (Entra ID). Tenant defaults to common.'],
   ['REWIND_SSO_OIDC_ISSUER / _CLIENT_ID / _CLIENT_SECRET / _NAME', '(unset)', 'Any OpenID Connect provider: Okta, Auth0, Keycloak, Cognito…'],

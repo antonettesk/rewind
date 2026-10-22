@@ -289,5 +289,5 @@ export function confirmation(steps: { operation: string; input: Record<string, u
     }
   });
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}` : parts[0];
-  return `Okay. I'll ${list}. REWIND is watching every step.`;
+  return `Okay. I'll ${list}. Rewind is watching every step.`;
 }

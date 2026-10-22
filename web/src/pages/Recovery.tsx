@@ -17,7 +17,7 @@ export function RecoveryPage() {
     <>
       <PageHeader
         title="Recovery"
-        description="Every recovery REWIND attempted, why, and what it could verify. Retry appears only where the registered compensation is safe to repeat and policy allows it."
+        description="Every recovery Rewind attempted, why, and what it could verify. Retry appears only where the registered compensation is safe to repeat and policy allows it."
       />
       {error ? <ErrorState error={error} onRetry={() => void reload()} /> : null}
       <Section title="Needs attention" description="Executions with effects that were not restored and verified." className="mb-6">

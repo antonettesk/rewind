@@ -104,7 +104,7 @@ export class SsoService {
     return url.toString();
   }
 
-  /** Handle the redirect back from the provider. Returns the REWIND user to sign in. */
+  /** Handle the redirect back from the provider. Returns the Rewind user to sign in. */
   async callback(providerId: string, q: { code?: string; state?: string; error?: string; error_description?: string }) {
     const p = this.provider(providerId);
     if (q.error) throw new DomainError('UNAUTHORIZED', `${p.name} sign-in was cancelled or refused: ${q.error_description ?? q.error}.`);
@@ -145,7 +145,7 @@ export class SsoService {
     let userId: string;
     let isNew = false;
     if (st.link_user_id) {
-      if (existing && existing.user_id !== st.link_user_id) throw new DomainError('VALIDATION_FAILED', `This ${p.name} account is already connected to a different REWIND user.`);
+      if (existing && existing.user_id !== st.link_user_id) throw new DomainError('VALIDATION_FAILED', `This ${p.name} account is already connected to a different Rewind user.`);
       userId = st.link_user_id;
     } else if (existing) {
       userId = existing.user_id;

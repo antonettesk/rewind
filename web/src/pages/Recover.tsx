@@ -11,12 +11,12 @@ const input =
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: ReactNode; children: ReactNode }) {
   useEffect(() => {
-    document.title = `${title} · REWIND`;
+    document.title = `${title} · Rewind`;
   }, [title]);
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-12">
       <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden />
-      <Link to="/" className="relative mb-8" aria-label="REWIND home">
+      <Link to="/" className="relative mb-8" aria-label="Rewind home">
         <Logo />
       </Link>
       <div className="surface-raised relative w-full max-w-sm rounded-2xl border border-border p-6">
@@ -152,7 +152,7 @@ export function InvitePage() {
   const next = encodeURIComponent(`/invite/${token}`);
 
   return (
-    <Card title="You're invited" subtitle={preview ? <>Join <strong className="text-fg">{preview.workspaceName}</strong> on REWIND.</> : undefined}>
+    <Card title="You're invited" subtitle={preview ? <>Join <strong className="text-fg">{preview.workspaceName}</strong> on Rewind.</> : undefined}>
       {err ? (
         <p className="text-sm text-bad">{err}</p>
       ) : !preview ? (

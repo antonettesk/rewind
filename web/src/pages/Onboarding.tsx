@@ -15,7 +15,7 @@ export function OnboardingPage() {
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   useEffect(() => {
-    document.title = 'Get started · REWIND';
+    document.title = 'Get started · Rewind';
   }, []);
   if (!me) return null;
 
@@ -122,7 +122,7 @@ function RewindStep({ onNext }: { onNext: () => void }) {
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Watch a failure get rewound.</h1>
       <p className="mt-3 max-w-2xl text-fg-2">
         The request: <em>"Prepare the house for the weekend."</em> The thermostat and task list will change. Then the security hub rejects activation (a deliberately
-        injected fault). REWIND halts, compensates the earlier steps newest-first, and reads each one back.
+        injected fault). Rewind halts, compensates the earlier steps newest-first, and reads each one back.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Button
@@ -223,7 +223,7 @@ function ConnectStep({ onNext }: { onNext: () => void }) {
 
       <div className={cx('mt-6 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors', connected ? 'border-ok/40 bg-ok-soft text-ok' : 'border-border bg-surface-2/50 text-fg-2')} role="status">
         {connected ? <Check className="size-4" aria-hidden /> : key ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Plug className="size-4" aria-hidden />}
-        {connected ? 'Connected. REWIND received a tool call from your MCP client.' : key ? 'Waiting for your client’s first tools/list or tools/call…' : 'Create a key to start.'}
+        {connected ? 'Connected. Rewind received a tool call from your MCP client.' : key ? 'Waiting for your client’s first tools/list or tools/call…' : 'Create a key to start.'}
       </div>
 
       <div className="mt-6 flex justify-end gap-2">
@@ -255,7 +255,7 @@ function DoneStep({ onFinish }: { onFinish: () => void }) {
         <RewindMark className="size-6" aria-hidden />
       </div>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">You're set up.</h1>
-      <p className="mx-auto mt-3 max-w-xl text-fg-2">From here, every execution your agents run through REWIND is recorded, contained and recoverable where recovery is possible.</p>
+      <p className="mx-auto mt-3 max-w-xl text-fg-2">From here, every execution your agents run through Rewind is recorded, contained and recoverable where recovery is possible.</p>
       <ul className="mx-auto mt-8 max-w-md space-y-2 text-left">
         {items.map((i) => (
           <li key={i.label} className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm">

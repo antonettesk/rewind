@@ -3,7 +3,7 @@
  * run by Hugging Face Transformers.js (Apache-2.0) on ONNX Runtime Web.
  * Audio never leaves the visitor's device: only the model weights are
  * downloaded (once, then cached by the browser), and the ONNX runtime itself
- * is served by REWIND rather than a third-party CDN.
+ * is served by Rewind rather than a third-party CDN.
  */
 import { env, pipeline } from '@huggingface/transformers';
 import ortMjs from 'onnxruntime-web/ort-wasm-simd-threaded.mjs?url';

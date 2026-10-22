@@ -176,7 +176,7 @@ function Verdict({ view }: { view: ExecutionView }) {
     if (failed) parts.push(`Step ${failed.sequence} (${failed.operationTitle}) ${failed.status === 'outcome_unknown' ? 'had an unknown outcome' : failed.status === 'denied' ? 'was denied' : 'failed'}: ${failed.errorMessage ?? e.failureReason}`);
     else if (e.failureReason) parts.push(e.failureReason);
     if (failed?.status === 'failed') parts.push('It did not apply its effect, so it needed no reversal.');
-    if (compensated.length) parts.push(`REWIND attempted to compensate ${compensated.length} step${compensated.length > 1 ? 's' : ''} and verified ${verified.length} by reading the resource back.`);
+    if (compensated.length) parts.push(`Rewind attempted to compensate ${compensated.length} step${compensated.length > 1 ? 's' : ''} and verified ${verified.length} by reading the resource back.`);
     else if (view.recoveryRequests.length === 0 && unresolved.length === 0) parts.push('No earlier step had changed anything, so there was nothing to recover.');
     if (unresolved.length) {
       tone = e.status === 'recovery_failed' || e.status === 'failed' ? 'bad' : 'warn';
@@ -274,7 +274,7 @@ function HeaderActions({ view, onChange }: { view: ExecutionView; onChange: (v: 
         }
       >
         <p>{retry.reason}</p>
-        <p className="mt-2">REWIND re-checks each resource before writing and refuses to overwrite a change made by someone else. Steps already verified are not touched again. Irreversible effects stay as they are.</p>
+        <p className="mt-2">Rewind re-checks each resource before writing and refuses to overwrite a change made by someone else. Steps already verified are not touched again. Irreversible effects stay as they are.</p>
         {err && <p className="mt-3 rounded bg-bad-soft px-3 py-2 text-xs text-bad" role="alert">{err}</p>}
       </Dialog>
 
@@ -521,7 +521,7 @@ function StepDetail({ a, execution }: { a: ActionView; execution: ExecutionView 
               <p className="mt-1 text-xs text-fg-2">
                 Effect certainty: <strong>{a.errorEffect ?? 'unknown'}</strong>
                 {a.errorEffect === 'none' && ' — the adapter reported nothing changed.'}
-                {a.errorEffect === 'unknown' && ' — REWIND cannot tell whether it changed anything, so it never retries blindly.'}
+                {a.errorEffect === 'unknown' && ' — Rewind cannot tell whether it changed anything, so it never retries blindly.'}
               </p>
               {a.reconciliation && <p className="mt-1 text-xs text-fg-2">Reconciliation by read-back: <strong>{a.reconciliation.replace('_', ' ')}</strong></p>}
             </div>

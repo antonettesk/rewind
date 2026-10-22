@@ -1,10 +1,10 @@
 /**
  * Optional AWS features. Both stay outside the safety path:
  *  - Amazon Nova (Bedrock) proposes which registered operations to call for a
- *    natural-language request. REWIND validates every proposal against the
+ *    natural-language request. Rewind validates every proposal against the
  *    operation's input schema and decides dependencies itself; execution,
  *    recovery and verification are unchanged and deterministic.
- *  - Amazon Polly reads REWIND's own deterministic outcome aloud. The spoken
+ *  - Amazon Polly reads Rewind's own deterministic outcome aloud. The spoken
  *    text is built from recorded state, never written by a model.
  *
  * Enabled when REWIND_AWS_REGION is set and the default AWS credential chain
@@ -39,7 +39,7 @@ export interface NovaPlannedStep {
 
 export interface NovaPlan {
   steps: NovaPlannedStep[];
-  /** Proposals REWIND refused, with the reason. Shown to the user, never executed. */
+  /** Proposals Rewind refused, with the reason. Shown to the user, never executed. */
   rejected: { operation: string; reason: string }[];
   model: string;
   latencyMs: number;
@@ -56,7 +56,7 @@ const SYSTEM = [
   'If nothing applies, reply with one short sentence and call no tools.',
 ].join(' ');
 
-/** Final routines depend on every earlier step; everything else is independent. REWIND decides this, not the model. */
+/** Final routines depend on every earlier step; everything else is independent. Rewind decides this, not the model. */
 const FINAL_OPERATIONS = new Set(['security.activate_routine']);
 const MAX_STEPS = 8;
 
@@ -188,7 +188,7 @@ export class AwsFeatures {
         because: typeof why === 'string' && why.trim() ? why.trim().slice(0, 160) : 'proposed by Amazon Nova',
       });
     }
-    // REWIND, not the model, orders final routines last and makes them depend on every earlier step.
+    // Rewind, not the model, orders final routines last and makes them depend on every earlier step.
     steps.sort((a, b) => Number(FINAL_OPERATIONS.has(a.operation)) - Number(FINAL_OPERATIONS.has(b.operation)));
     steps.forEach((s, i) => {
       s.depends_on = FINAL_OPERATIONS.has(s.operation) ? Array.from({ length: i }, (_, k) => k + 1) : [];
@@ -196,7 +196,7 @@ export class AwsFeatures {
     return { steps, rejected, model: this.config.novaModelId, latencyMs: Date.now() - started, usage: { inputTokens, outputTokens } };
   }
 
-  /** Synthesize REWIND's deterministic summary of an execution as MP3. */
+  /** Synthesize Rewind's deterministic summary of an execution as MP3. */
   async speak(workspaceId: string, view: ExecutionView): Promise<Buffer> {
     if (!this.polly) throw new DomainError('FORBIDDEN', 'Amazon Polly is not configured on this server.');
     const text = spokenSummary(view, (key) => this.registry.describe().find((o) => o.key === key)?.title ?? key);
@@ -233,7 +233,7 @@ export function spokenSummary(v: ExecutionView, title: (operationKey: string) =>
   const status = v.execution.status;
   if (status === 'awaiting_approval') {
     const waiting = v.actions.find((a) => a.status === 'awaiting_approval');
-    parts.push(`${n(s.succeeded, 'step')} done so far. ${waiting ? title(waiting.operationKey) : 'The next step'} is waiting for a person to approve it in the REWIND console.`);
+    parts.push(`${n(s.succeeded, 'step')} done so far. ${waiting ? title(waiting.operationKey) : 'The next step'} is waiting for a person to approve it in the Rewind console.`);
   } else if (status === 'pending' || status === 'running') {
     parts.push(`This run is still in progress: ${n(s.succeeded, 'step')} done so far.`);
   } else if (s.failedAt === null) {

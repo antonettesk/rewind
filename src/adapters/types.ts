@@ -1,5 +1,5 @@
 /**
- * The adapter contract. An adapter is the only way REWIND touches the outside
+ * The adapter contract. An adapter is the only way Rewind touches the outside
  * world. Each operation declares, up front and in code, what it does and what
  * recovery it supports; the engine never infers recoverability.
  */
@@ -50,7 +50,7 @@ export interface CompensationInput<I> {
   /** State captured right after the forward action succeeded, if available. */
   after: ResourceState | null;
   /**
-   * The resource version REWIND's own write produced, if known. Compensation
+   * The resource version Rewind's own write produced, if known. Compensation
    * must refuse to write if the resource has moved past this version.
    */
   writtenVersion: number | null;

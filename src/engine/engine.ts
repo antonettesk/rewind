@@ -1,5 +1,5 @@
 /**
- * The REWIND execution engine.
+ * The Rewind execution engine.
  *
  * Forward path: policy check → lock → capture state → execute (with timeout
  * and bounded, safe retries) → capture state → record. The first failure halts
@@ -193,7 +193,7 @@ export class Engine {
         throw new DomainError('INVALID_TRANSITION', 'This execution has a pre-declared plan. Use run_execution to advance it.');
       }
       if (actions.some((a) => a.status === 'awaiting_approval')) {
-        throw new DomainError('APPROVAL_REQUIRED', 'A step is waiting for human approval in the REWIND console.');
+        throw new DomainError('APPROVAL_REQUIRED', 'A step is waiting for human approval in the Rewind console.');
       }
       const limits = effectiveLimits(await this.repo.listPolicies(ctx.workspaceId));
       if (actions.length >= limits.maxActionsPerExecution) {
@@ -592,7 +592,7 @@ export class Engine {
       return end('failed', { errorCode: 'NO_SNAPSHOT', errorMessage: 'No captured original state; refusing to guess.', errorEffect: 'none' }, 'compensation.failed', { reason: 'missing snapshot or handler' });
     }
 
-    // Optimistic concurrency: if the resource moved on since REWIND wrote it, do not overwrite it.
+    // Optimistic concurrency: if the resource moved on since Rewind wrote it, do not overwrite it.
     // Prefer the version our own write reported; fall back to the post-write snapshot.
     const result = action.resultRef ? await this.repo.getPayload(action.resultRef) : null;
     const writtenVersion = (result !== null && op.writtenVersion?.(result)) || null;
@@ -604,7 +604,7 @@ export class Engine {
         const reference = after?.capturedState.data ?? {};
         return end(
           'conflict',
-          { errorCode: 'STATE_CONFLICT', errorMessage: `Resource changed after REWIND wrote it (v${expectedVersion} → v${current.version}). Compensation skipped to avoid overwriting another change.`, errorEffect: 'none' },
+          { errorCode: 'STATE_CONFLICT', errorMessage: `Resource changed after Rewind wrote it (v${expectedVersion} → v${current.version}). Compensation skipped to avoid overwriting another change.`, errorEffect: 'none' },
           'compensation.conflict',
           { expectedVersion, observedVersion: current.version, diffs: diffObjects(reference, current.data) },
         );

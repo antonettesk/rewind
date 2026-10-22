@@ -68,7 +68,7 @@ export function Provenance({ kind }: { kind: 'recorded' | 'derived' | 'unavailab
   const text = { recorded: 'Recorded', derived: 'Derived', unavailable: 'Not captured' }[kind];
   const help = {
     recorded: 'Persisted verbatim when it happened.',
-    derived: 'Computed from recorded facts by REWIND.',
+    derived: 'Computed from recorded facts by Rewind.',
     unavailable: 'This adapter did not capture this information.',
   }[kind];
   return (
@@ -81,7 +81,7 @@ export function Provenance({ kind }: { kind: 'recorded' | 'derived' | 'unavailab
 // ── Layout primitives ──
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
   useEffect(() => {
-    document.title = `${title} · REWIND`;
+    document.title = `${title} · Rewind`;
   }, [title]);
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

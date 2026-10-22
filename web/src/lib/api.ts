@@ -1,5 +1,5 @@
 /**
- * Typed client for the REWIND HTTP API. Response types are imported from the
+ * Typed client for the Rewind HTTP API. Response types are imported from the
  * server's own read models, so the UI and backend cannot drift silently.
  */
 import type { ExecutionView } from '../../../src/services/queries';
@@ -45,7 +45,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   try {
     res = await fetch(`/api${path}`, { method, headers, credentials: 'same-origin', body: body === undefined ? undefined : JSON.stringify(body) });
   } catch {
-    throw new ApiError(0, 'NETWORK', 'Cannot reach the REWIND server. Is it running?');
+    throw new ApiError(0, 'NETWORK', 'Cannot reach the Rewind server. Is it running?');
   }
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;

@@ -391,19 +391,19 @@ export function createHttpApp(app: App) {
     res.json(app.aws.status());
   });
 
-  // Amazon Nova proposes steps; REWIND validates them. Nothing runs here: the agent executes the plan over MCP.
+  // Amazon Nova proposes steps; Rewind validates them. Nothing runs here: the agent executes the plan over MCP.
   api.post('/agent/plan', role('member'), async (req, res) => {
     const body = z.object({ request: z.string().trim().min(3).max(500) }).strict().parse(req.body);
     res.json(await app.aws.plan(req.rewind!.workspaceId, body.request));
   });
 
-  // REWIND's own spoken-style outcome, built from recorded state. Browsers read it aloud when Polly is off.
+  // Rewind's own spoken-style outcome, built from recorded state. Browsers read it aloud when Polly is off.
   api.get('/executions/:id/summary', async (req, res) => {
     const view = await app.queries.executionView(req.rewind!.workspaceId, String(req.params.id));
     res.json({ text: spokenSummary(view, (key) => app.registry.describe().find((o) => o.key === key)?.title ?? key) });
   });
 
-  // Amazon Polly reads REWIND's deterministic summary of the execution.
+  // Amazon Polly reads Rewind's deterministic summary of the execution.
   api.get('/executions/:id/voice.mp3', async (req, res) => {
     const view = await app.queries.executionView(req.rewind!.workspaceId, String(req.params.id));
     const audio = await app.aws.speak(req.rewind!.workspaceId, view);
@@ -794,7 +794,7 @@ export function createHttpApp(app: App) {
       res.sendFile(join(dist, 'index.html'));
     });
   } else {
-    http.get('/', (_req, res) => res.type('text/plain').send('REWIND API is running. Build the web console with `npm run build`, or run `npm run dev:web`.'));
+    http.get('/', (_req, res) => res.type('text/plain').send('Rewind API is running. Build the web console with `npm run build`, or run `npm run dev:web`.'));
   }
 
   http.use(errorHandler(app));

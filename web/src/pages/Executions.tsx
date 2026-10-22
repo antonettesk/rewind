@@ -115,7 +115,7 @@ export function ExecutionsPage() {
           <LoadingRows rows={6} />
         ) : items.length === 0 ? (
           <EmptyState icon={<ListTree className="size-6" aria-hidden />} title={q || filter ? 'No matching executions' : 'No executions yet'} action={!q && !filter && <Link to="/app/demo"><Button variant="primary">Run the demo</Button></Link>}>
-            {q || filter ? 'Try a different filter or search term.' : 'Executions are recorded when an agent calls REWIND through MCP or when you run a demo scenario.'}
+            {q || filter ? 'Try a different filter or search term.' : 'Executions are recorded when an agent calls Rewind through MCP or when you run a demo scenario.'}
           </EmptyState>
         ) : (
           <div className="overflow-x-auto">

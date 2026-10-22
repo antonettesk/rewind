@@ -14,12 +14,12 @@ function safeNext(next: string | null, fallback: string) {
 
 function Shell({ title, subtitle, children, footer }: { title: string; subtitle: string; children: ReactNode; footer: ReactNode }) {
   useEffect(() => {
-    document.title = `${title} · REWIND`;
+    document.title = `${title} · Rewind`;
   }, [title]);
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
       <div className="flex flex-col px-6 py-8 sm:px-12">
-        <Link to="/" aria-label="REWIND home">
+        <Link to="/" aria-label="Rewind home">
           <Logo />
         </Link>
         <motion.div
@@ -274,7 +274,7 @@ export function LoginPage() {
   return (
     <Shell
       title="Welcome back"
-      subtitle="Sign in to your REWIND workspace."
+      subtitle="Sign in to your Rewind workspace."
       footer={
         <>
           New here?{' '}

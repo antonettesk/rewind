@@ -175,7 +175,7 @@ export class WebhookService {
   async sendTest(workspaceId: string, id: string) {
     const h = this.get(workspaceId, id);
     if (!h) throw new DomainError('NOT_FOUND', 'Webhook not found.');
-    return this.deliver(h, 'webhook.test', { message: 'Test event from REWIND. If you can read this, signatures verify and delivery works.' }, null, 1);
+    return this.deliver(h, 'webhook.test', { message: 'Test event from Rewind. If you can read this, signatures verify and delivery works.' }, null, 1);
   }
 
   /** Deliver one event, retrying on network errors and 5xx/429. Resolves with the final delivery record. */
@@ -202,7 +202,7 @@ export class WebhookService {
           signal: AbortSignal.timeout(5_000),
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': 'REWIND-Webhooks/1.0',
+            'User-Agent': 'Rewind-Webhooks/1.0',
             'Rewind-Event': type,
             'Rewind-Delivery': eventId,
             'Rewind-Signature': `t=${t},v1=${sign(secret, t, body)}`,

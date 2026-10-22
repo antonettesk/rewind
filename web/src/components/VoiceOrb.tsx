@@ -13,7 +13,7 @@ const LABEL: Record<VoiceState, string> = {
 
 /**
  * An Echo-style light ring. Cyan sweeps while listening, the ring spins while
- * REWIND works, and it pulses while the assistant speaks.
+ * Rewind works, and it pulses while the assistant speaks.
  */
 export function VoiceOrb({ state, onClick, disabled, size = 'md', level = 0 }: { state: VoiceState; onClick: () => void; disabled?: boolean; size?: 'md' | 'lg'; level?: number }) {
   const dim = size === 'lg' ? 'size-20' : 'size-14';

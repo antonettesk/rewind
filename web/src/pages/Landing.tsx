@@ -12,10 +12,10 @@ import { RewindDial } from './landing/RewindDial';
 import { Playground } from './landing/Playground';
 
 const STORY = [
-  { icon: FileLock2, title: 'Record', body: 'Before any write, REWIND checks policy, leases the resource and snapshots it. After the write, it snapshots again and keeps the version it produced.', code: 'snapshot.captured · before v1\npolicy.evaluated · allow\nsnapshot.captured · after v2' },
+  { icon: FileLock2, title: 'Record', body: 'Before any write, Rewind checks policy, leases the resource and snapshots it. After the write, it snapshots again and keeps the version it produced.', code: 'snapshot.captured · before v1\npolicy.evaluated · allow\nsnapshot.captured · after v2' },
   { icon: Shield, title: 'Contain', body: 'The first failure halts forward progress. Timeouts are treated as unknown, never retried blindly, and reconciled by reading the resource back.', code: 'action.failed · SECURITY_HUB_REJECTED\neffect: none\nexecution.halted · 0 steps skipped' },
   { icon: RotateCcw, title: 'Compensate', body: 'Only steps with a registered compensation are undone, newest first along dependencies, with compare-and-set so a human’s later change is never overwritten.', code: 'recovery.planned · undo #2 → #1\ncompensation.started · #2\ncompare-and-set · v2 == v2 ✓' },
-  { icon: ClipboardCheck, title: 'Verify', body: 'A handler returning is not proof. REWIND reads every resource back and compares it to the captured original. Anything that doesn’t match is reported, by name.', code: 'verification.passed · #2 v3 == original\nverification.passed · #1 v3 == original\nrecovery.completed · recovered' },
+  { icon: ClipboardCheck, title: 'Verify', body: 'A handler returning is not proof. Rewind reads every resource back and compares it to the captured original. Anything that doesn’t match is reported, by name.', code: 'verification.passed · #2 v3 == original\nverification.passed · #1 v3 == original\nrecovery.completed · recovered' },
 ];
 
 const CAPABILITIES: [string, 'compensatable' | 'irreversible' | 'rollback'][] = [
@@ -32,9 +32,9 @@ const CAPABILITIES: [string, 'compensatable' | 'irreversible' | 'rollback'][] = 
 ];
 
 const FAQ: [string, string][] = [
-  ['Can REWIND undo a sent email?', 'No, and it says so. Operations declare whether they are compensatable, rollback-capable or irreversible. Irreversible effects are never "undone"; they are reported as unresolved side effects, and you can require human approval before they run.'],
+  ['Can Rewind undo a sent email?', 'No, and it says so. Operations declare whether they are compensatable, rollback-capable or irreversible. Irreversible effects are never "undone"; they are reported as unresolved side effects, and you can require human approval before they run.'],
   ['Does an LLM decide what gets rolled back?', 'Never. Eligibility, ordering, conflict detection and verification are deterministic functions over recorded state and declared capabilities. The playground above runs that exact code.'],
-  ['What if someone changes the record after the agent did?', 'Compensation is compare-and-set on the version REWIND’s own write produced. If the resource moved on, REWIND refuses to overwrite it and flags it for manual review.'],
+  ['What if someone changes the record after the agent did?', 'Compensation is compare-and-set on the version Rewind’s own write produced. If the resource moved on, Rewind refuses to overwrite it and flags it for manual review.'],
   ['How do agents connect?', 'Any MCP client over Streamable HTTP (Claude Code, the MCP Inspector, your own agent) with a workspace API key. Approvals stay in the console; no MCP tool can approve an action.'],
   ['Is it secure enough for a team?', 'Roles enforced server-side, SSO via OpenID Connect, TOTP two-factor with recovery codes, account lockout, hashed secrets, append-only audit, signed webhooks, strict CSP. Self-hosted: your data stays with you.'],
 ];
@@ -56,7 +56,7 @@ export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
-    document.title = 'REWIND · Undo for AI agents, with proof';
+    document.title = 'Rewind · Undo for AI agents, with proof';
   }, []);
 
   async function tryDemo() {
@@ -111,7 +111,7 @@ export function LandingPage() {
             scrolled ? 'h-12 max-w-4xl border-white/10 bg-[#07080b]/90 shadow-[0_8px_32px_-12px_rgba(0,0,0,.8)] lg:bg-black/55' : 'h-14 max-w-6xl border-transparent bg-transparent',
           )}
         >
-          <Link to="/" aria-label="REWIND home">
+          <Link to="/" aria-label="Rewind home">
             <Logo />
           </Link>
           <nav aria-label="Sections" className="hidden items-center gap-7 text-sm text-white/60 md:flex">
@@ -149,20 +149,7 @@ export function LandingPage() {
           <div className="absolute inset-x-0 top-[38rem] h-[40rem] bg-[linear-gradient(to_bottom,transparent,#050608_55%)]" />
         </div>
         <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
-          <motion.a
-            href="#playground"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0b0c10]/80 px-3 py-1 text-xs text-white/70 hover:text-white"
-          >
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
-            </span>
-            MCP-native safety layer for tool-using agents
-            <ArrowRight className="size-3" aria-hidden />
-          </motion.a>
-          <h1 className="mt-8 text-[clamp(2.6rem,7.2vw,5.6rem)] font-semibold leading-[1.04] tracking-[-0.045em]">
+          <h1 className="mt-4 text-[clamp(2.6rem,7.2vw,5.6rem)] font-semibold leading-[1.04] tracking-[-0.045em]">
             <span className="sr-only">Agents break things. </span>
             <motion.span
               aria-hidden
@@ -182,7 +169,7 @@ export function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
             >
-              REWIND puts them back.
+              Rewind puts them back.
             </motion.span>
           </h1>
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-white/55 sm:text-lg">
@@ -238,7 +225,7 @@ export function LandingPage() {
       </section>
 
       {/* Numbers */}
-      <section className="relative z-10 mx-auto max-w-6xl px-4 pt-28 sm:px-6" aria-label="REWIND by the numbers">
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pt-28 sm:px-6" aria-label="Rewind by the numbers">
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-4">
           {[
             { n: 0, s: '', label: 'LLM calls in the safety path' },
@@ -260,7 +247,7 @@ export function LandingPage() {
       <section className="relative z-10 mx-auto max-w-5xl px-4 pt-32 sm:px-6">
         <ScrollWords
           className="text-[clamp(1.75rem,4vw,3.25rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-white"
-          text="Agents act fast and fail halfway. Most tools hand you a log and an apology. REWIND hands you back the original state, verified, and names anything that could not come back."
+          text="Agents act fast and fail halfway. Most tools hand you a log and an apology. Rewind hands you back the original state, verified, and names anything that could not come back."
         />
       </section>
 
@@ -269,7 +256,7 @@ export function LandingPage() {
         <Reveal className="max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-indigo-300">How it works</p>
           <h2 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">An apology isn&apos;t a rollback.</h2>
-          <p className="mt-4 text-white/60">Four deterministic steps, from the first tool call to the last check. A model can ask; REWIND decides.</p>
+          <p className="mt-4 text-white/60">Four deterministic steps, from the first tool call to the last check. A model can ask; Rewind decides.</p>
         </Reveal>
         <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div className="hidden lg:block">

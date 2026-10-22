@@ -1,4 +1,4 @@
-# REWIND container image for Amazon Bedrock AgentCore Runtime, which expects an MCP server at 0.0.0.0:8000/mcp.
+# Rewind container image for Amazon Bedrock AgentCore Runtime, which expects an MCP server at 0.0.0.0:8000/mcp.
 # See docs/deploy-aws.md.
 FROM node:24-slim AS build
 WORKDIR /app

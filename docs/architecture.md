@@ -1,6 +1,6 @@
 # Architecture
 
-REWIND is one Node.js process that serves three surfaces on one port: the MCP endpoint (`/mcp`), a JSON API with server-sent events (`/api`), and the built web console. Everything shares one composition root (`src/services/app.ts`), so MCP tools, HTTP routes and the console all go through the same engine and read models.
+Rewind is one Node.js process that serves three surfaces on one port: the MCP endpoint (`/mcp`), a JSON API with server-sent events (`/api`), and the built web console. Everything shares one composition root (`src/services/app.ts`), so MCP tools, HTTP routes and the console all go through the same engine and read models.
 
 ## Boundaries
 
@@ -81,7 +81,7 @@ For each step:
    - otherwise `inconclusive`, which goes to manual review.
 3. Plan with `planRecovery`: decide each step, then order compensations in **reverse dependency order** (topological order of `dependsOn`, reversed; `null` means "depends on the previous step", `[]` means independent).
 4. For each compensation:
-   - capture a `pre_compensation` snapshot and compare its version with the version REWIND's own write produced (`writtenVersion`); if they differ, record `conflict` and do not write;
+   - capture a `pre_compensation` snapshot and compare its version with the version Rewind's own write produced (`writtenVersion`); if they differ, record `conflict` and do not write;
    - call the handler with a timeout (adapters also compare-and-set);
    - read the resource back, persist a `verification` snapshot, and compare to `before` → `verified` or `unverified`.
    If a step is not verified, its transitive dependencies are **not** compensated, because the surviving effect may rely on them.
@@ -129,7 +129,7 @@ The `Repository` interface is fully async, and operations that must be atomic (t
 
 - **Within an execution:** a per-execution async mutex serializes engine operations in this process.
 - **Across executions:** resource leases in SQLite give single-writer-per-resource while an execution is in its forward or recovery phase. Leases are released when the execution halts or finishes.
-- **Across time:** compensation is guarded by version checks, so a change made after REWIND's write is never overwritten.
+- **Across time:** compensation is guarded by version checks, so a change made after Rewind's write is never overwritten.
 - **Not provided:** distributed locking across multiple server processes or hosts. SQLite's file lock serializes writers on one host only. A multi-instance deployment needs a shared database with row-level locks or a lease service.
 
 ## Restart behaviour

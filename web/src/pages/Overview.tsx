@@ -23,7 +23,7 @@ export function OverviewPage() {
     <>
       <PageHeader
         title="Overview"
-        description={`${greeting}. Here's what your agents did, what failed, and what REWIND could prove it restored.`}
+        description={`${greeting}. Here's what your agents did, what failed, and what Rewind could prove it restored.`}
         actions={
           <Link to="/app/demo">
             <Button variant="primary" icon={<PlayCircle className="size-4" aria-hidden />}>
@@ -138,10 +138,10 @@ function FirstRun() {
     <Section className="mb-6">
       <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-fg-3">Why REWIND exists</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-fg-3">Why Rewind exists</p>
           <h2 className="mt-2 text-lg font-semibold tracking-tight">An agent changed two things, then the third step failed.</h2>
           <p className="mt-2 text-sm leading-relaxed text-fg-2">
-            The thermostat is in away mode and the task list was edited, but the security routine never activated. A model saying "I'll undo that" proves nothing. REWIND
+            The thermostat is in away mode and the task list was edited, but the security routine never activated. A model saying "I'll undo that" proves nothing. Rewind
             captures each resource before it changes, runs registered compensations in reverse order, and reads every resource back to verify it. When an effect cannot
             be reversed, it says so.
           </p>

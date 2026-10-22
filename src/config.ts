@@ -20,7 +20,7 @@ const schema = z.object({
   REWIND_METRICS_TOKEN: z.string().min(16).optional(),
   REWIND_ALLOW_PRIVATE_WEBHOOKS: z.enum(['true', 'false']).optional(),
   REWIND_RESEND_API_KEY: z.string().regex(/^re_[A-Za-z0-9_]+$/, 'Resend API keys start with re_').optional(),
-  REWIND_MAIL_FROM: z.string().min(3).default('REWIND <onboarding@resend.dev>'),
+  REWIND_MAIL_FROM: z.string().min(3).default('Rewind <onboarding@resend.dev>'),
   REWIND_TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   REWIND_SECRET_KEY: z.string().refine((v) => Buffer.from(v, 'base64').length === 32, 'REWIND_SECRET_KEY must be 32 bytes, base64-encoded').optional(),
 });

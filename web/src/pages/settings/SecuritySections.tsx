@@ -34,7 +34,7 @@ export function TwoFactor() {
   };
 
   const download = () => {
-    const blob = new Blob([`REWIND recovery codes\nEach code works once.\n\n${(codes ?? []).join('\n')}\n`], { type: 'text/plain' });
+    const blob = new Blob([`Rewind recovery codes\nEach code works once.\n\n${(codes ?? []).join('\n')}\n`], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'rewind-recovery-codes.txt';

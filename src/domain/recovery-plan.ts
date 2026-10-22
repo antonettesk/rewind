@@ -86,7 +86,7 @@ function decide(a: PlannableAction, opts: { maxAttempts: number; allowRetry: boo
   if (!last) return step('compensate', 'Effect applied and a registered compensation exists.');
   if (last.status === 'verified') return step('already_verified', 'An earlier recovery attempt was verified.');
   if (last.status === 'conflict') {
-    return step('manual_review', 'The resource changed after REWIND touched it. Compensating would overwrite someone else\'s change.');
+    return step('manual_review', 'The resource changed after Rewind touched it. Compensating would overwrite someone else\'s change.');
   }
   if (!opts.allowRetry) return step('retry_not_safe', 'Recovery retries are disabled by policy.');
   if (a.attempts.length >= opts.maxAttempts) return step('attempts_exhausted', `Reached the policy limit of ${opts.maxAttempts} recovery attempts.`);

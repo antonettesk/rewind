@@ -212,7 +212,7 @@ export function Layout() {
       </a>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col justify-between border-r border-border bg-surface px-3 py-4 lg:flex">
         <div className="space-y-5">
-          <Link to="/" className="block px-2.5" aria-label="REWIND home">
+          <Link to="/" className="block px-2.5" aria-label="Rewind home">
             <Logo />
           </Link>
           {searchButton}

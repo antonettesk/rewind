@@ -231,7 +231,7 @@ export function DemoPage() {
     <>
       <PageHeader
         title="Agent demo"
-        description="A simulated assistant receives a household request and acts only through REWIND's MCP tools. Faults are injected deterministically, so every run is reproducible."
+        description="A simulated assistant receives a household request and acts only through Rewind's MCP tools. Faults are injected deterministically, so every run is reproducible."
         actions={
           <Button icon={<RotateCcw className="size-4" aria-hidden />} onClick={() => setResetOpen(true)} disabled={running || readOnly}>
             Reset demo
@@ -244,7 +244,7 @@ export function DemoPage() {
         <p>
           <strong className="font-semibold text-fg">Browser simulation.</strong> This is not a live Alexa+ integration and controls no real device; the home is synthetic data.
           Speak or type a request. Voice uses your browser's built-in speech recognition and voices. {planner === 'nova'
-            ? 'Amazon Nova on Bedrock proposes the steps; REWIND validates each one against the operation schema and decides ordering itself. Execution, recovery and verification never involve the model.'
+            ? 'Amazon Nova on Bedrock proposes the steps; Rewind validates each one against the operation schema and decides ordering itself. Execution, recovery and verification never involve the model.'
             : 'The planner is a deterministic keyword matcher (no LLM).'}{' '}
           The MCP connection and every tool call are real.
         </p>
@@ -348,8 +348,8 @@ export function DemoPage() {
             description={
               planner === 'nova'
                 ? novaPlan
-                  ? `Proposed by ${novaPlan.model} in ${novaPlan.latencyMs} ms${novaPlan.usage ? ` (${novaPlan.usage.inputTokens + novaPlan.usage.outputTokens} tokens)` : ''}, then validated by REWIND. Policy and recovery capabilities come from the server registry.`
-                  : 'Amazon Nova proposes steps when you run or preview. REWIND rejects anything outside the registry or its input schemas.'
+                  ? `Proposed by ${novaPlan.model} in ${novaPlan.latencyMs} ms${novaPlan.usage ? ` (${novaPlan.usage.inputTokens + novaPlan.usage.outputTokens} tokens)` : ''}, then validated by Rewind. Policy and recovery capabilities come from the server registry.`
+                  : 'Amazon Nova proposes steps when you run or preview. Rewind rejects anything outside the registry or its input schemas.'
                 : 'Produced by the deterministic planner. Policy decisions and recovery capabilities come from the server registry.'
             }
           >
@@ -384,7 +384,7 @@ export function DemoPage() {
             )}
             {planner === 'nova' && novaPlan && novaPlan.rejected.length > 0 && (
               <div className="border-t border-border px-4 py-3 text-xs text-fg-2">
-                <p className="font-medium text-warn">REWIND refused {novaPlan.rejected.length} proposal{novaPlan.rejected.length > 1 ? 's' : ''} from the model:</p>
+                <p className="font-medium text-warn">Rewind refused {novaPlan.rejected.length} proposal{novaPlan.rejected.length > 1 ? 's' : ''} from the model:</p>
                 <ul className="mt-1 space-y-0.5 font-mono">
                   {novaPlan.rejected.map((r, i) => (
                     <li key={i}>
@@ -636,7 +636,7 @@ function ScenarioLibrary({ onRan }: { onRan: (v: ExecutionView) => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const toast = useToast();
   return (
-    <Section className="mt-6" title="Reproducible failure scenarios" description="Each runs a fixed plan with fixed faults through the same engine via the HTTP API. Use them to see every recovery outcome REWIND can report.">
+    <Section className="mt-6" title="Reproducible failure scenarios" description="Each runs a fixed plan with fixed faults through the same engine via the HTTP API. Use them to see every recovery outcome Rewind can report.">
       {error ? (
         <div className="p-4">
           <ErrorState error={error} />
@@ -758,7 +758,7 @@ function VoiceReport({ executionId, status }: { executionId: string; status: str
         {state === 'playing' ? <Pause className="size-3.5" aria-hidden /> : <Mic className="size-3.5" aria-hidden />}
         {state === 'loading' ? 'Preparing…' : state === 'playing' ? 'Stop' : 'Listen'}
       </button>
-      <p className="text-xs text-fg-2">{state === 'error' ? 'The voice report could not be played.' : 'REWIND\'s own outcome, read aloud by Amazon Polly. Written from recorded state, not by a model.'}</p>
+      <p className="text-xs text-fg-2">{state === 'error' ? 'The voice report could not be played.' : 'Rewind\'s own outcome, read aloud by Amazon Polly. Written from recorded state, not by a model.'}</p>
       <audio ref={ref} onPlaying={() => setState('playing')} onEnded={() => setState('idle')} onError={() => setState('error')} preload="none" className="hidden" />
     </div>
   );

@@ -1,7 +1,7 @@
 /**
- * Standalone MCP client demo. Connects to a running REWIND server over
+ * Standalone MCP client demo. Connects to a running Rewind server over
  * Streamable HTTP with the official SDK, runs the weekend workflow step by step,
- * and prints what REWIND recorded and verified.
+ * and prints what Rewind recorded and verified.
  *
  *   npm run start            # in one terminal
  *   npm run demo:mcp         # in another
@@ -32,7 +32,7 @@ const red = color(31);
 const yellow = color(33);
 
 async function main() {
-  console.log(bold('REWIND MCP client demo'), dim(`→ ${url.href}`));
+  console.log(bold('Rewind MCP client demo'), dim(`→ ${url.href}`));
 
   // Demo control (human-side, HTTP API): arm the deterministic fault. The agent does not know about it.
   await api('/demo/faults', { method: 'DELETE' });

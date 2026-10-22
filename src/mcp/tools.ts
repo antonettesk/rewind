@@ -97,17 +97,17 @@ export function buildMcpServer(app: App, ctx: CallContext, opts: { readOnly?: bo
   };
   const server = new McpServer(SERVER_INFO, {
     instructions:
-      'REWIND records, executes and recovers multi-step tool actions. Discover operations with list_operations, open an execution with create_execution, ' +
-      'then call execute_registered_action for each step. If a step fails, REWIND halts and runs registered compensations automatically when policy allows; ' +
+      'Rewind records, executes and recovers multi-step tool actions. Discover operations with list_operations, open an execution with create_execution, ' +
+      'then call execute_registered_action for each step. If a step fails, Rewind halts and runs registered compensations automatically when policy allows; ' +
       'read the outcome with get_recovery_status. Never assume an action was undone unless its recovery outcome is "recovery_verified". ' +
-      'Approvals are granted by people in the REWIND console, not through MCP.',
+      'Approvals are granted by people in the Rewind console, not through MCP.',
   });
 
   server.registerTool(
     'list_operations',
     {
       title: 'List registered operations',
-      description: 'List every operation REWIND can execute, with its input schema, declared recovery capability, permissions, and the current policy decision.',
+      description: 'List every operation Rewind can execute, with its input schema, declared recovery capability, permissions, and the current policy decision.',
       inputSchema: z.object({ adapter_id: adapterId.optional() }).strict(),
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
     },
@@ -157,7 +157,7 @@ export function buildMcpServer(app: App, ctx: CallContext, opts: { readOnly?: bo
     {
       title: 'Execute a registered action',
       description:
-        'Run one registered adapter operation as the next step of an open execution. REWIND checks policy, captures the resource state, executes with a timeout, and records the result. ' +
+        'Run one registered adapter operation as the next step of an open execution. Rewind checks policy, captures the resource state, executes with a timeout, and records the result. ' +
         'On failure it halts the execution and, if policy allows, compensates earlier steps and verifies them. Pass a dedupe_key so a retried call never repeats the mutation.',
       inputSchema: z
         .object({
@@ -294,7 +294,7 @@ export function buildMcpServer(app: App, ctx: CallContext, opts: { readOnly?: bo
     {
       title: 'Request recovery',
       description:
-        'Ask REWIND to recover a failed, cancelled or partially recovered execution. REWIND decides deterministically which steps are eligible from their registered capabilities; ' +
+        'Ask Rewind to recover a failed, cancelled or partially recovered execution. Rewind decides deterministically which steps are eligible from their registered capabilities; ' +
         'a request_key makes the request idempotent. Irreversible effects are reported, never "undone".',
       inputSchema: z.object({ execution_id: id('exe'), request_key: key }).strict(),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },

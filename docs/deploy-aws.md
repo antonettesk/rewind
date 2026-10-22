@@ -10,11 +10,11 @@ According to the current AgentCore developer guide ("Deploy MCP servers in Agent
 - speak Streamable HTTP. Stateless mode is recommended, and the platform adds an `Mcp-Session-Id` header when one is missing;
 - sit behind inbound auth configured on the runtime (for example `CUSTOM_JWT` with a Cognito or Auth0 discovery URL), with `Authorization` allow-listed if the container needs to see it.
 
-REWIND already matches the transport side: a stateless Streamable HTTP server at `/mcp`. The [Dockerfile](../Dockerfile) sets `REWIND_HOST=0.0.0.0` and `REWIND_PORT=8000`.
+Rewind already matches the transport side: a stateless Streamable HTTP server at `/mcp`. The [Dockerfile](../Dockerfile) sets `REWIND_HOST=0.0.0.0` and `REWIND_PORT=8000`.
 
 ## Gaps to close before a real deployment
 
-1. **Authentication handoff (implemented).** The image sets `REWIND_TRUST_UPSTREAM_AUTH=agentcore`: AgentCore authenticates callers (IAM SigV4 by default, or `CUSTOM_JWT`), and MCP calls that reach the container without a REWIND key are mapped to the built-in workspace. Do not allow-list `Authorization` unless you also send a REWIND key. Verifying the platform JWT inside REWIND (defence in depth) is not implemented.
+1. **Authentication handoff (implemented).** The image sets `REWIND_TRUST_UPSTREAM_AUTH=agentcore`: AgentCore authenticates callers (IAM SigV4 by default, or `CUSTOM_JWT`), and MCP calls that reach the container without a Rewind key are mapped to the built-in workspace. Do not allow-list `Authorization` unless you also send a Rewind key. Verifying the platform JWT inside Rewind (defence in depth) is not implemented.
 2. **Host validation.** The image sets `REWIND_ALLOWED_HOSTS=*` because the container is reachable only through AgentCore. Tighten it to the observed host after a first invocation.
 3. **Durability.** AgentCore sessions run in isolated, ephemeral environments, so SQLite on local disk would not persist history across sessions. Durable history needs the PostgreSQL repository (for example on Amazon RDS or Aurora). The repository port is ready; the implementation is not.
 4. **Architecture.** Check the current guide for the required image architecture (it has historically been ARM64) and build with `docker buildx --platform linux/arm64` if so.

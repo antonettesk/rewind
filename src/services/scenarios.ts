@@ -31,7 +31,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'weekend-failure',
     title: 'Weekend prep, security hub fails',
-    summary: 'Two steps succeed, the third is rejected. REWIND compensates both and verifies them.',
+    summary: 'Two steps succeed, the third is rejected. Rewind compensates both and verifies them.',
     request: WEEKEND_REQUEST,
     steps: weekendSteps,
     faults: [{ operation: 'security.activate_routine', mode: 'error' }],
@@ -61,7 +61,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'state-drift',
     title: 'Someone edits the task list',
-    summary: 'Another household member changes the task list after REWIND did. REWIND refuses to overwrite their change.',
+    summary: 'Another household member changes the task list after Rewind did. Rewind refuses to overwrite their change.',
     request: WEEKEND_REQUEST,
     steps: weekendSteps,
     faults: [
@@ -73,7 +73,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'unknown-outcome',
     title: 'Task update times out',
-    summary: 'The task update applies but its response is lost. REWIND does not retry; it reads the list back, sees the change, and compensates.',
+    summary: 'The task update applies but its response is lost. Rewind does not retry; it reads the list back, sees the change, and compensates.',
     request: WEEKEND_REQUEST,
     steps: weekendSteps,
     faults: [{ operation: 'tasks.update', mode: 'timeout' }],
@@ -82,7 +82,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'irreversible-message',
     title: 'A message was already sent',
-    summary: 'An approved household message goes out before the failure. It cannot be unsent, and REWIND says so.',
+    summary: 'An approved household message goes out before the failure. It cannot be unsent, and Rewind says so.',
     request: 'Set the thermostat to away, tell the household we are leaving, then activate the security routine.',
     steps: [
       { adapterId: 'home-sim', operation: 'thermostat.set_mode', input: { mode: 'away', targetC: 16 } },

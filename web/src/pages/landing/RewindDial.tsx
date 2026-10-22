@@ -1,5 +1,5 @@
 /**
- * REWIND's signature backdrop: a bezel of version ticks and a counter-clockwise
+ * Rewind's signature backdrop: a bezel of version ticks and a counter-clockwise
  * rewind arrow, turning slowly backwards like a tape counter. Pure SVG; each
  * ring is its own element rotated with a CSS transform, so the GPU composites
  * it without repainting, and nothing here uses blur or blend modes.
@@ -49,7 +49,7 @@ const head = (() => {
   const r = [x - nx * 13, y - ny * 13];
   return `M${l[0]!.toFixed(1)} ${l[1]!.toFixed(1)}L${tip[0]!.toFixed(1)} ${tip[1]!.toFixed(1)}L${r[0]!.toFixed(1)} ${r[1]!.toFixed(1)}Z`;
 })();
-// Snapshot markers: the versions REWIND can return to.
+// Snapshot markers: the versions Rewind can return to.
 // Offset so no marker sits directly above the headline.
 const MARKS = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
   const a = ((i * 45 - 67.5) * Math.PI) / 180;

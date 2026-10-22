@@ -1,6 +1,6 @@
 # Writing an adapter
 
-An adapter is the only way REWIND touches the outside world. It is a TypeScript object implementing `Adapter` from [src/adapters/types.ts](../src/adapters/types.ts), registered in [src/services/app.ts](../src/services/app.ts).
+An adapter is the only way Rewind touches the outside world. It is a TypeScript object implementing `Adapter` from [src/adapters/types.ts](../src/adapters/types.ts), registered in [src/services/app.ts](../src/services/app.ts).
 
 ## The contract
 
@@ -46,7 +46,7 @@ interface OperationDefinition<I, O> {
 
 ## Writing a good compensation
 
-1. **Compare-and-set.** Write only if the resource is still at `writtenVersion`. Otherwise throw `new AdapterError('STATE_CONFLICT', message, 'none')`. REWIND also checks this before calling you, but only you can close the race atomically.
+1. **Compare-and-set.** Write only if the resource is still at `writtenVersion`. Otherwise throw `new AdapterError('STATE_CONFLICT', message, 'none')`. Rewind also checks this before calling you, but only you can close the race atomically.
 2. **Restore business state, not history.** Write `before.data` (or the subset you own) back as a new version.
 3. **Classify errors.** Throw `AdapterError(code, message, effect, retryable)`:
    - `effect: 'none'` when nothing changed. Retrying is then safe even for non-idempotent compensations.
@@ -64,7 +64,7 @@ The demo adapter [src/adapters/home-sim/adapter.ts](../src/adapters/home-sim/ada
 | `error` | The forward call fails, `effect: none`. |
 | `transient` | The forward call fails once, `effect: none`, `retryable`. |
 | `timeout` | The write lands, then the call hangs past its timeout (unknown outcome). |
-| `drift` | Another "household member" changes the resource right after REWIND's write. |
+| `drift` | Another "household member" changes the resource right after Rewind's write. |
 | `compensation_error` | The compensation is rejected, `effect: none`. |
 | `silent_compensation_failure` | The compensation "succeeds" but writes the wrong state. Verification catches it. |
 

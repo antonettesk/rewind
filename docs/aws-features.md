@@ -1,21 +1,21 @@
 # AWS features: Amazon Nova planning and Amazon Polly voice
 
-Both are optional and both sit outside the safety path. With them off, REWIND
+Both are optional and both sit outside the safety path. With them off, Rewind
 behaves exactly as before.
 
 | Feature | What it does | What it never does |
 | --- | --- | --- |
 | **Amazon Nova** (Bedrock Converse) | Turns a natural-language request into proposed calls to registered operations. | Execute anything, decide ordering or dependencies, judge recovery. |
-| **Amazon Polly** | Reads REWIND's outcome for an execution aloud. | Speak model-written text. The words come from `spokenSummary()`, built from recorded state. |
+| **Amazon Polly** | Reads Rewind's outcome for an execution aloud. | Speak model-written text. The words come from `spokenSummary()`, built from recorded state. |
 
 ## How Nova planning stays safe
 
 1. The agent demo posts the request to `POST /api/agent/plan` (member role).
-2. REWIND sends Nova one tool per registered operation, using that operation's
+2. Rewind sends Nova one tool per registered operation, using that operation's
    own JSON Schema plus a required `why` field. Temperature is 0.
 3. Each proposal is checked: unknown tools, duplicates and inputs that fail the
    operation's Zod schema are **refused** and shown to the user as refused.
-4. REWIND, not the model, orders final routines last and sets their
+4. Rewind, not the model, orders final routines last and sets their
    dependencies.
 5. The browser agent then runs the validated plan over MCP, the same path as
    every other client. Policy, approvals, compensation and read-back

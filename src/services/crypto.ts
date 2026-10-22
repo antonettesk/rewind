@@ -1,5 +1,5 @@
 /**
- * Encryption at rest for secrets REWIND must be able to read back (TOTP seeds).
+ * Encryption at rest for secrets Rewind must be able to read back (TOTP seeds).
  * AES-256-GCM with a 32-byte key from REWIND_SECRET_KEY (base64), or a key file
  * created next to the database on first start (mode 0600).
  */

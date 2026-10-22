@@ -69,7 +69,7 @@ export class SecurityService {
           .send(
             emailTemplate({
               to: u.email,
-              subject: 'Your REWIND account was locked',
+              subject: 'Your Rewind account was locked',
               heading: 'We locked your account to protect it',
               body: [`There were ${failures} failed sign-in attempts in a row. Sign-in is paused until ${new Date(until).toUTCString()}.`, 'If this was you, wait or reset your password. If it was not, reset your password now.'],
               action: { label: 'Reset password', url: `${this.publicUrl}/forgot-password` },
@@ -163,7 +163,7 @@ export class SecurityService {
   async beginEnrollment(userId: string, accountLabel: string) {
     const secret = newTotpSecret();
     this.db.prepare('UPDATE users SET mfa_pending_enc = ? WHERE id = ?').run(this.box.seal(secret), userId);
-    const uri = `otpauth://totp/${encodeURIComponent(`REWIND:${accountLabel}`)}?secret=${secret}&issuer=REWIND&algorithm=SHA1&digits=6&period=30`;
+    const uri = `otpauth://totp/${encodeURIComponent(`Rewind:${accountLabel}`)}?secret=${secret}&issuer=Rewind&algorithm=SHA1&digits=6&period=30`;
     return { secret, uri, qr: await QRCode.toDataURL(uri, { margin: 1, width: 220 }) };
   }
 
@@ -181,7 +181,7 @@ export class SecurityService {
     });
     if (u.email) {
       await this.mailer
-        .send(emailTemplate({ to: u.email, subject: 'Two-factor authentication is on', heading: 'Two-factor authentication enabled', body: ['Your REWIND account now asks for a code from your authenticator app at sign-in.', "If you didn't do this, reset your password immediately."] }))
+        .send(emailTemplate({ to: u.email, subject: 'Two-factor authentication is on', heading: 'Two-factor authentication enabled', body: ['Your Rewind account now asks for a code from your authenticator app at sign-in.', "If you didn't do this, reset your password immediately."] }))
         .catch(() => undefined);
     }
     return { recoveryCodes: codes.map((c) => `${c.slice(0, 5)}-${c.slice(5)}`) };
@@ -198,7 +198,7 @@ export class SecurityService {
     });
     if (u.email) {
       await this.mailer
-        .send(emailTemplate({ to: u.email, subject: 'Two-factor authentication was turned off', heading: 'Two-factor authentication disabled', body: ["Sign-in to your REWIND account no longer asks for an authenticator code.", "If you didn't do this, reset your password and turn it back on."] }))
+        .send(emailTemplate({ to: u.email, subject: 'Two-factor authentication was turned off', heading: 'Two-factor authentication disabled', body: ["Sign-in to your Rewind account no longer asks for an authenticator code.", "If you didn't do this, reset your password and turn it back on."] }))
         .catch(() => undefined);
     }
   }

@@ -38,7 +38,7 @@ export function AdaptersPage() {
   const { data, error, loading, reload } = useAsync(() => api.adapters(), []);
   return (
     <>
-      <PageHeader title="Adapters" description="The only way REWIND touches the outside world. Every operation declares, in code, what it changes and how it can be recovered. REWIND never infers recoverability." />
+      <PageHeader title="Adapters" description="The only way Rewind touches the outside world. Every operation declares, in code, what it changes and how it can be recovered. Rewind never infers recoverability." />
       {error ? <ErrorState error={error} onRetry={() => void reload()} /> : null}
       {loading && !data ? <LoadingRows /> : null}
       {data?.adapters.length === 0 && <EmptyState icon={<Blocks className="size-6" aria-hidden />} title="No adapters registered" />}
@@ -111,7 +111,7 @@ export function AdaptersPage() {
               <p className="font-medium text-fg">An action counts as recoverable only if all of these are true:</p>
               <ol className="mt-2 list-decimal space-y-1.5 pl-5">
                 <li>The operation declares <code>compensatable</code> or <code>rollback</code> and registers a handler.</li>
-                <li>The resource can be read, so REWIND captures its state <em>before</em> the change.</li>
+                <li>The resource can be read, so Rewind captures its state <em>before</em> the change.</li>
                 <li>The write reports its resulting version, so compensation can refuse to overwrite a later change.</li>
                 <li>After compensation, reading the resource back matches the captured original.</li>
               </ol>

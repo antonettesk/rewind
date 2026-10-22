@@ -1,7 +1,7 @@
 import type { ReactNode, SVGProps } from 'react';
 
 /**
- * REWIND's own icon set. Drawn on a 24px grid with a 1.7 stroke and round
+ * Rewind's own icon set. Drawn on a 24px grid with a 1.7 stroke and round
  * joins, two-tone: the part that carries the meaning is solid, supporting
  * structure is drawn at reduced opacity. Recovery icons share one motif, a
  * counter-clockwise arc. Same props as an <svg>; size comes from className.
@@ -40,7 +40,7 @@ const shield = 'M12 3.2 19 5.8v5.6c0 4.4-3 7.9-7 9.4-4-1.5-7-5-7-9.4V5.8z';
 const doc = 'M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z';
 
 // ── Brand ────────────────────────────────────────────────────────────────────
-/** The REWIND mark: two chevrons pulling back, the trailing one quieter. */
+/** The Rewind mark: two chevrons pulling back, the trailing one quieter. */
 export const RewindMark = icon('RewindMark', (
   <>
     <path d="M11.8 6.2 6 12l5.8 5.8" strokeWidth={2} />

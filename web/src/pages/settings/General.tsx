@@ -77,7 +77,7 @@ export function GeneralSettings() {
         </form>
       </Section>
 
-      <Section title={`Usage in ${month || 'this month'}`} description="Counted from stored records in this workspace. REWIND is self-hosted; there is no metered billing.">
+      <Section title={`Usage in ${month || 'this month'}`} description="Counted from stored records in this workspace. Rewind is self-hosted; there is no metered billing.">
         {u ? (
           <div className="grid grid-cols-2 divide-border sm:grid-cols-4 lg:grid-cols-7 lg:divide-x">
             <Stat label="Executions" value={fmtNumber(u.executions)} />

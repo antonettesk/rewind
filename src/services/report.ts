@@ -17,7 +17,7 @@ const OUTCOME_LABEL: Record<string, string> = {
 export function renderReport(v: ExecutionView): string {
   const e = v.execution;
   const lines: string[] = [];
-  lines.push(`# REWIND execution report`);
+  lines.push(`# Rewind execution report`);
   lines.push('');
   lines.push(`> Sanitized export. Sensitive keys were redacted before storage. ${e.metadata.demo ? 'Contains synthetic demo data only.' : ''}`.trim());
   lines.push('');

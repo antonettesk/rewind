@@ -37,7 +37,7 @@ export function WebhooksSettings() {
 
   return (
     <div className="space-y-6">
-      <Section title="Add a webhook" description="REWIND POSTs a signed JSON event when an execution needs attention, recovers, succeeds, or waits for approval. HTTPS only; private addresses are refused.">
+      <Section title="Add a webhook" description="Rewind POSTs a signed JSON event when an execution needs attention, recovers, succeeds, or waits for approval. HTTPS only; private addresses are refused.">
         <form
           className="space-y-4 p-4"
           onSubmit={async (e) => {

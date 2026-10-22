@@ -1,23 +1,23 @@
-# REWIND
+# Rewind
 
 **Live: [getrewind.onrender.com](https://getrewind.onrender.com)** · no signup, nothing to install.
 
 ### Try it in 60 seconds
 
 1. Open the site and type (or say) your own request in **Ask your home**, for example *"turn the heat down to 18, remind me to water the plants, then lock up"*.
-2. **Run it.** A real MCP agent carries out each step through REWIND, and the last step is made to fail on purpose.
-3. Watch REWIND stop, undo the earlier steps newest-first, and **read every resource back** to prove it was restored.
-4. Try **Tell the family**: a message needs your approval, and can't be unsent, so REWIND tells you exactly that instead of claiming a rollback.
+2. **Run it.** A real MCP agent carries out each step through Rewind, and the last step is made to fail on purpose.
+3. Watch Rewind stop, undo the earlier steps newest-first, and **read every resource back** to prove it was restored.
+4. Try **Tell the family**: a message needs your approval, and can't be unsent, so Rewind tells you exactly that instead of claiming a rollback.
 5. Try **Try something risky**: the default policy blocks *disarm* before anything happens.
 
 
-**AI can make mistakes. REWIND makes those mistakes visible, contained and recoverable, whenever recovery is actually possible.**
+**AI can make mistakes. Rewind makes those mistakes visible, contained and recoverable, whenever recovery is actually possible.**
 
-REWIND is an execution-control layer between a tool-using AI agent and the tools it is allowed to use. It records the state of every resource before an agent changes it, executes operations only through registered adapters, halts on the first failure, runs registered compensating actions in reverse dependency order, and then **reads every resource back to verify** that it was restored. When an effect cannot be undone, such as a sent message, REWIND says so instead of pretending.
+Rewind is an execution-control layer between a tool-using AI agent and the tools it is allowed to use. It records the state of every resource before an agent changes it, executes operations only through registered adapters, halts on the first failure, runs registered compensating actions in reverse dependency order, and then **reads every resource back to verify** that it was restored. When an effect cannot be undone, such as a sent message, Rewind says so instead of pretending.
 
 It ships as a complete product: a landing page, accounts (or a one-click guest workspace), guided onboarding, a self-hosted **MCP server (Streamable HTTP, MCP protocol 2025-11-25)** with per-workspace API keys, a console for investigating and recovering executions, and a deterministic demo that needs no third-party keys or model access.
 
-> A language model saying "I'll undo that" is not proof that anything was undone. REWIND treats restoration as a claim that has to be verified.
+> A language model saying "I'll undo that" is not proof that anything was undone. Rewind treats restoration as a claim that has to be verified.
 
 ---
 
@@ -28,7 +28,7 @@ A simulated assistant receives:
 > *"Prepare the house for the weekend. Switch the thermostat to away mode, update the household task list, and activate the security routine."*
 
 1. A real MCP client connects to `/mcp`, discovers the tools and opens an execution.
-2. `thermostat.set_mode` and `tasks.update` succeed. REWIND captured each resource **before** and **after** the change.
+2. `thermostat.set_mode` and `tasks.update` succeed. Rewind captured each resource **before** and **after** the change.
 3. `security.activate_routine` fails through a deliberately injected, deterministic fault (`SECURITY_HUB_REJECTED`).
 4. The engine halts forward progress, plans recovery from the declared capabilities, and compensates `tasks.update`, then `thermostat.set_mode`. Each compensation re-checks the resource version first and refuses to overwrite a change made by someone else.
 5. It reads both resources back and compares them to the captured originals. Both match, so they are **recovered and verified**.
@@ -36,7 +36,7 @@ A simulated assistant receives:
 
 Everything above goes through the backend and is persisted in SQLite. Nothing is faked in browser state.
 
-### Recovery outcomes REWIND distinguishes
+### Recovery outcomes Rewind distinguishes
 
 | Outcome | Meaning |
 |---|---|
@@ -44,7 +44,7 @@ Everything above goes through the backend and is persisted in SQLite. Nothing is
 | **Recovery pending** | Compensation started; not yet verified. |
 | **Recovery failed** | Compensation was attempted, but restoration could not be verified (handler error, or read-back mismatch). |
 | **Recovery unavailable** | The operation is declared irreversible or has no registered strategy. The effect remains. |
-| **Needs manual review** | The resource changed after REWIND wrote it, or an unknown outcome could not be reconciled. REWIND will not guess. |
+| **Needs manual review** | The resource changed after Rewind wrote it, or an unknown outcome could not be reconciled. Rewind will not guess. |
 | **Not required** | The step had no effect (a read, a step that never ran, or a failure that provably changed nothing). |
 
 The difference between *true rollback* (the target system offers transactional rollback) and *compensation* (a separate operation that restores business state) is part of each operation's declaration. See [docs/recovery-semantics.md](docs/recovery-semantics.md).
@@ -150,7 +150,7 @@ flowchart LR
     A[MCP client<br/>Claude Code, Inspector,<br/>browser agent sim, CLI]
     U[Web console<br/>React + Vite]
   end
-  subgraph Server["REWIND server (one Node process)"]
+  subgraph Server["Rewind server (one Node process)"]
     M["/mcp<br/>Streamable HTTP<br/>@modelcontextprotocol/server v2"]
     H["/api<br/>JSON + SSE"]
     G[Auth, Host/Origin checks,<br/>rate limit]
@@ -249,7 +249,7 @@ An action counts as recoverable only if:
 - **Account security:** change your password (other sessions are signed out), reset a forgotten one with a one-use 30-minute link, see and revoke active sessions, or upgrade a guest workspace to a permanent account in place.
 - **Webhooks:** signed (HMAC-SHA256) notifications for `execution.needs_attention`, `execution.recovered`, `execution.failed`, `execution.succeeded` and `approval.requested`, with retries, a delivery log and SSRF protection. See [docs/webhooks.md](docs/webhooks.md).
 - **Audit log:** a workspace-wide, append-only page of every admin, access, approval and recovery event.
-- **Usage:** per-month counts of executions, MCP-driven executions, verified and failed recoveries, and approvals, from stored records. REWIND is self-hosted and has no billing.
+- **Usage:** per-month counts of executions, MCP-driven executions, verified and failed recoveries, and approvals, from stored records. Rewind is self-hosted and has no billing.
 
 
 - **Sign up** with a name, email and password (scrypt, N=2^15, per-user salt), or **continue as guest** for a temporary workspace that is deleted automatically.

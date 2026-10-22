@@ -46,7 +46,7 @@ export class ResendMailer implements Mailer {
     for (let attempt = 1; attempt <= 2; attempt++) {
       const res = await this.fetchImpl(this.endpoint, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${this.apiKey}`, 'Content-Type': 'application/json', 'User-Agent': 'REWIND/1.0' },
+        headers: { Authorization: `Bearer ${this.apiKey}`, 'Content-Type': 'application/json', 'User-Agent': 'Rewind/1.0' },
         body,
         signal: AbortSignal.timeout(10_000),
       });
