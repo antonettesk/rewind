@@ -1,3 +1,4 @@
+import type React from 'react';
 import { AgentMark, ArrowRight, ChevronDown, ClipboardCheck, FileLock2, Fingerprint, GitBranch, KeyRound, Launch, Lock, RewindMark, RotateCcw, Shield, ShieldCheck, UserCheck, Webhook } from '../components/icons';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
@@ -39,6 +40,23 @@ const FAQ: [string, string][] = [
   ['Is it secure enough for a team?', 'Roles enforced server-side, SSO via OpenID Connect, TOTP two-factor with recovery codes, account lockout, hashed secrets, append-only audit, signed webhooks, strict CSP. Self-hosted: your data stays with you.'],
 ];
 
+/** A quiet cue that there is more below: the voice and text box. */
+function AskCue({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <motion.a
+      href="#ask"
+      style={style}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.2, duration: 0.8 }}
+      className={cx('group flex w-fit flex-col items-center gap-1 text-xs text-white/40 transition-colors hover:text-white/80', className)}
+    >
+      Or just ask it
+      <ChevronDown className="size-4 animate-bounce group-hover:text-cyan-200" aria-hidden />
+    </motion.a>
+  );
+}
+
 export function LandingPage() {
   const { me, refresh } = useAuth();
   const nav = useNavigate();
@@ -53,6 +71,23 @@ export function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 24));
   const story = useActiveStep(STORY.length);
+  const measureDial = () => {
+    if (typeof window === 'undefined') return { wide: true, compact: false, size: 780, scale: 1 };
+    const wide = window.innerWidth >= 640;
+    // Wide: the dial fills the space below the nav (84px) with 20px of air at the bottom; the scroll cue sits inside it.
+    const size = wide ? Math.min(window.innerHeight - 104, window.innerWidth * 0.94, 980) : Math.min(window.innerWidth * 0.9, 380);
+    // Short screens (a 1366×768 laptop leaves ~650px) get a one-line summary so the text stays large.
+    const compact = wide && size < 680;
+    // Content is laid out for a dial of this size, then scaled to the real dial so it always sits in the clear centre.
+    const designed = compact ? 760 : 850;
+    return { wide, compact, size, scale: wide ? Math.min(1.12, size / designed) : 1 };
+  };
+  const [dial, setDial] = useState(measureDial);
+  useEffect(() => {
+    const onResize = () => setDial(measureDial());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
@@ -140,74 +175,87 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero: everything on the first screen sits inside the rewind dial. */}
       <section ref={hero} className="relative z-10 overflow-clip">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_15%_0%,rgba(79,70,229,.28),transparent_70%),radial-gradient(50%_40%_at_90%_10%,rgba(6,182,212,.16),transparent_70%)]" />
-          <RewindDial className="absolute left-1/2 top-10 w-[min(68rem,170vw)] -translate-x-1/2 opacity-60 sm:top-4 sm:opacity-90" />
-          {/* Fade the dial into the page so it never competes with the playground. */}
-          <div className="absolute inset-x-0 top-[38rem] h-[40rem] bg-[linear-gradient(to_bottom,transparent,#050608_55%)]" />
         </div>
-        <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="relative mx-auto flex min-h-[100svh] max-w-5xl flex-col items-center justify-center px-4 pb-24 pt-28 text-center sm:px-6">
-          <h1 className="mt-4 text-[clamp(2.6rem,7.2vw,5.6rem)] font-semibold leading-[1.04] tracking-[-0.045em]">
-            <span className="sr-only">Agents break things. </span>
-            <motion.span
-              aria-hidden
-              className="-mb-[0.16em] block bg-[linear-gradient(180deg,#fff,rgba(255,255,255,.72))] bg-clip-text pb-[0.16em] text-transparent"
-              initial={{ opacity: 0, y: 28, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Agents break
-            </motion.span>
-            <motion.span aria-hidden className="block" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}>
-              <WordRotator words={['thermostats.', 'task lists.', 'CRM records.', 'calendars.', 'configs.', 'workflows.']} className="sheen" />
-            </motion.span>
-            <motion.span
-              className="mt-4 block text-[0.5em] font-medium tracking-[-0.03em] text-white/55"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Rewind puts them back.
-            </motion.span>
-          </h1>
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-white/55 sm:text-lg">
-            The execution layer between your agent and its tools. Every write is recorded, the first failure is contained, eligible steps are compensated in reverse, and every
-            resource is <span className="text-white">read back and verified</span>. When something can&apos;t be undone, you&apos;re told exactly what.
-          </motion.p>
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Magnetic>
-            <button
-              type="button"
-              onClick={tryDemo}
-              disabled={busy}
-              className="group relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-6 text-sm font-semibold text-black shadow-[0_0_48px_-6px_rgba(129,140,248,.85)] transition-shadow duration-500 hover:shadow-[0_0_64px_-4px_rgba(103,232,249,.9)] disabled:opacity-60"
-            >
-              <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(99,102,241,.25),transparent)] transition-transform duration-700 group-hover:translate-x-full" aria-hidden />
-              {busy ? <span className="size-4 animate-spin rounded-full border-2 border-black/30 border-t-black" aria-hidden /> : <Launch className="size-4" aria-hidden />}
-              {me ? 'Open the live demo' : 'Try the live demo, no signup'}
-              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
-            </button>
-            </Magnetic>
-            <Magnetic>
-            <a href="#playground" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0b0c10]/70 px-6 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10">
-              Break something first <ChevronDown className="size-4" aria-hidden />
-            </a>
-            </Magnetic>
-          </motion.div>
-          <p className="mt-6 text-xs text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>
-          {/* A quiet cue that there is more below: the voice and text box. */}
-          <motion.a
-            href="#ask"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
-            className="group absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-xs text-white/40 transition-colors hover:text-white/80"
-          >
-            Or just ask it
-            <ChevronDown className="size-4 animate-bounce group-hover:text-cyan-200" aria-hidden />
-          </motion.a>
+        <motion.div
+          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+          className="relative flex min-h-[100svh] flex-col items-center px-4 pb-10 pt-[92px] sm:justify-center sm:px-6 sm:pb-5 sm:pt-[84px]"
+        >
+          <div className="relative flex w-full items-center justify-center">
+            {dial.wide && (
+              <RewindDial className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-90" style={{ width: dial.size }} />
+            )}
+            {/* Scaled so it always fits the dial's clear centre (see measureDial). */}
+            <div className="relative w-[40rem] max-w-full text-center" style={dial.wide ? { transform: `scale(${dial.scale})${dial.compact ? ' translateY(-36px)' : ''}` } : undefined}>
+              <div className="relative flex items-center justify-center" style={dial.wide ? undefined : { minHeight: dial.size }}>
+                {!dial.wide && (
+                  <RewindDial className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-80" style={{ width: dial.size }} />
+                )}
+                <h1 className="relative text-[clamp(2.6rem,11vw,3.4rem)] font-semibold leading-[1.04] tracking-[-0.045em] sm:text-[4.1rem]">
+                  <span className="sr-only">Agents break things. </span>
+                  <motion.span
+                    aria-hidden
+                    className="-mb-[0.16em] block bg-[linear-gradient(180deg,#fff,rgba(255,255,255,.72))] bg-clip-text pb-[0.16em] text-transparent"
+                    initial={{ opacity: 0, y: 28, filter: 'blur(10px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    Agents break
+                  </motion.span>
+                  <motion.span aria-hidden className="block" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}>
+                    <WordRotator words={['thermostats.', 'task lists.', 'CRM records.', 'calendars.', 'configs.', 'workflows.']} className="sheen" />
+                  </motion.span>
+                  <motion.span
+                    className="mt-4 block text-[0.5em] font-medium tracking-[-0.03em] text-white/55"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    Rewind puts them back.
+                  </motion.span>
+                </h1>
+              </div>
+              <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className={cx("relative mx-auto max-w-2xl text-balance text-base leading-relaxed text-white/55 sm:max-w-[34rem] sm:text-[17px]", dial.compact ? "mt-5" : "mt-7")}>
+                {dial.compact ? (
+                  <>
+                    Every agent action recorded, undone in reverse, and <span className="text-white">read back to prove it</span>.
+                  </>
+                ) : (
+                  <>
+                    The execution layer between your agent and its tools. Every write is recorded, the first failure is contained, eligible steps are compensated in reverse, and every
+                    resource is <span className="text-white">read back and verified</span>. When something can&apos;t be undone, you&apos;re told exactly what.
+                  </>
+                )}
+              </motion.p>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} className={cx("relative flex flex-col items-center justify-center gap-3 sm:flex-row", dial.compact ? "mt-7" : "mt-10")}>
+                <Magnetic>
+                <button
+                  type="button"
+                  onClick={tryDemo}
+                  disabled={busy}
+                  className="group relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-white px-5 text-sm font-semibold text-black sm:text-[15px] shadow-[0_0_48px_-6px_rgba(129,140,248,.85)] transition-shadow duration-500 hover:shadow-[0_0_64px_-4px_rgba(103,232,249,.9)] disabled:opacity-60"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(99,102,241,.25),transparent)] transition-transform duration-700 group-hover:translate-x-full" aria-hidden />
+                  {busy ? <span className="size-4 animate-spin rounded-full border-2 border-black/30 border-t-black" aria-hidden /> : <Launch className="size-4" aria-hidden />}
+                  {me ? 'Open the live demo' : 'Try the live demo, no signup'}
+                  <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
+                </button>
+                </Magnetic>
+                <Magnetic>
+                <a href="#playground" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0b0c10]/70 px-5 text-sm font-semibold sm:text-[15px] text-white transition-colors hover:border-white/30 hover:bg-white/10">
+                  Break something first <ChevronDown className="size-4" aria-hidden />
+                </a>
+                </Magnetic>
+              </motion.div>
+              {!dial.compact && <p className="relative mt-6 text-[13px] text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>}
+            </div>
+            {/* Inside the dial's lower clear area, below the content. */}
+            {dial.wide && <AskCue className="absolute left-1/2 -translate-x-1/2" style={{ top: `calc(50% + ${Math.round(dial.size * 0.315)}px)` }} />}
+          </div>
+          {!dial.wide && <AskCue className="relative mx-auto mt-8" />}
         </motion.div>
       </section>
 

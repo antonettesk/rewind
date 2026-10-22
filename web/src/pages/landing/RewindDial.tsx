@@ -1,3 +1,4 @@
+import type React from 'react';
 /**
  * Rewind's signature backdrop: a bezel of version ticks and a counter-clockwise
  * rewind arrow, turning slowly backwards like a tape counter. Pure SVG; each
@@ -31,9 +32,9 @@ function arc(r: number, from: number, to: number) {
 }
 
 const OUTER = ticks(494, 120, 22, 9, 10);
-const MID = ticks(468, 60, 7, 4, 5);
+const MID = ticks(466, 60, 7, 4, 5);
 // The rewind arrow: a long arc whose head points counter-clockwise.
-const ARROW_R = 418;
+const ARROW_R = 448;
 const ARROW_ARC = arc(ARROW_R, 150, 420);
 const head = (() => {
   const a = (150 * Math.PI) / 180;
@@ -53,12 +54,17 @@ const head = (() => {
 // Offset so no marker sits directly above the headline.
 const MARKS = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
   const a = ((i * 45 - 67.5) * Math.PI) / 180;
-  return { x: C + Math.cos(a) * 452, y: C + Math.sin(a) * 452, label: `v${i + 1}`, active: i === 0 };
+  const r = 428;
+  const lr = 406; // labels sit just inside their dot
+  return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r, lx: C + Math.cos(a) * lr, ly: C + Math.sin(a) * lr + 5, label: `v${i + 1}`, active: i === 0 };
 });
 
-export function RewindDial({ className }: { className?: string }) {
+/** The clear radius inside the rings, as a fraction of the dial's width. Content inside this never touches a ring. */
+export const DIAL_CLEAR = 0.395;
+
+export function RewindDial({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={className} aria-hidden>
+    <div className={className} style={style} aria-hidden>
       <div className="relative aspect-square w-full">
         {/* Static glow: gradients, not blur filters, so phones pay nothing per frame. */}
         <div className="absolute inset-[4%] rounded-full bg-[radial-gradient(closest-side,rgba(99,102,241,.2),rgba(34,211,238,.07)_60%,transparent_80%)]" />
@@ -88,18 +94,18 @@ export function RewindDial({ className }: { className?: string }) {
           <path d={head} fill="#c7d2fe" stroke="#c7d2fe" strokeWidth="2" strokeLinejoin="round" />
         </svg>
         <svg viewBox="0 0 1000 1000" className="absolute inset-0 size-full">
-          <circle cx={C} cy={C} r="452" stroke="rgba(255,255,255,.07)" strokeWidth="1" fill="none" strokeDasharray="2 10" />
+          <circle cx={C} cy={C} r="428" stroke="rgba(255,255,255,.07)" strokeWidth="1" fill="none" strokeDasharray="2 10" />
           {MARKS.map((m) => (
             <g key={m.label}>
               <circle cx={m.x} cy={m.y} r={m.active ? 5 : 3} fill={m.active ? '#67e8f9' : 'rgba(255,255,255,.25)'} />
               {m.active && <circle cx={m.x} cy={m.y} r="12" stroke="#67e8f9" strokeOpacity=".4" fill="none" className="dial-ping" />}
-              <text x={m.x} y={m.y - 13} textAnchor="middle" fontSize="15" fontFamily="JetBrains Mono Variable, ui-monospace, monospace" fill={m.active ? 'rgba(103,232,249,.8)' : 'rgba(255,255,255,.18)'}>
+              <text x={m.lx} y={m.ly} textAnchor="middle" fontSize="15" fontFamily="JetBrains Mono Variable, ui-monospace, monospace" fill={m.active ? 'rgba(103,232,249,.8)' : 'rgba(255,255,255,.18)'}>
                 {m.label}
               </text>
             </g>
           ))}
         </svg>
-        <div className="absolute inset-[22%] rounded-full bg-[radial-gradient(closest-side,rgba(5,6,8,.85),rgba(5,6,8,.5)_60%,transparent)]" />
+        <div className="absolute inset-[12%] rounded-full bg-[radial-gradient(closest-side,rgba(5,6,8,.78),rgba(5,6,8,.45)_70%,transparent)]" />
       </div>
     </div>
   );
