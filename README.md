@@ -2,7 +2,7 @@
 
 **Live: [getrewind.onrender.com](https://getrewind.onrender.com)** · no signup, nothing to install.
 
-> **Hackathon judges:** the full submission pack (description, testing steps, product feedback, friction log, video script) is in [`docs/submission/`](docs/submission/README.md).
+> **Judges:** my full submission write-up (description, testing steps, product feedback, friction log, video plan) is in [`docs/submission/`](docs/submission/README.md).
 
 ### Try it in 60 seconds
 

@@ -141,14 +141,14 @@ export function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section ref={hero} className="relative z-10 overflow-clip pt-32 sm:pt-40">
+      <section ref={hero} className="relative z-10 overflow-clip">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_15%_0%,rgba(79,70,229,.28),transparent_70%),radial-gradient(50%_40%_at_90%_10%,rgba(6,182,212,.16),transparent_70%)]" />
           <RewindDial className="absolute left-1/2 top-10 w-[min(68rem,170vw)] -translate-x-1/2 opacity-60 sm:top-4 sm:opacity-90" />
           {/* Fade the dial into the page so it never competes with the playground. */}
           <div className="absolute inset-x-0 top-[38rem] h-[40rem] bg-[linear-gradient(to_bottom,transparent,#050608_55%)]" />
         </div>
-        <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
+        <motion.div style={{ y: heroY, opacity: heroOpacity, scale: heroScale }} className="relative mx-auto flex min-h-[100svh] max-w-5xl flex-col items-center justify-center px-4 pb-24 pt-28 text-center sm:px-6">
           <h1 className="mt-4 text-[clamp(2.6rem,7.2vw,5.6rem)] font-semibold leading-[1.04] tracking-[-0.045em]">
             <span className="sr-only">Agents break things. </span>
             <motion.span
@@ -196,14 +196,40 @@ export function LandingPage() {
             </a>
             </Magnetic>
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
-            <AskBox onRun={runRequest} busy={busy} />
-          </motion.div>
-          <p className="mt-3 text-xs text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>
+          <p className="mt-6 text-xs text-white/40">Open source · self-hosted in one command · no LLM in the safety path</p>
+          {/* A quiet cue that there is more below: the voice and text box. */}
+          <motion.a
+            href="#ask"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
+            className="group absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-xs text-white/40 transition-colors hover:text-white/80"
+          >
+            Or just ask it
+            <ChevronDown className="size-4 animate-bounce group-hover:text-cyan-200" aria-hidden />
+          </motion.a>
         </motion.div>
+      </section>
+
+      {/* Ask: type or say your own request */}
+      <section id="ask" className="relative z-10 scroll-mt-20 px-4 pb-8 pt-6 sm:px-6 sm:pt-10">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-cyan-300">Try it with your voice</p>
+          <h2 className="mt-4 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">Say it. Watch it fail. Watch it rewind.</h2>
+          <p className="mx-auto mt-4 max-w-xl text-white/55">
+            Ask the house to do something, in your own words. A real agent carries it out through Rewind, the last step fails on purpose, and Rewind puts everything back, then tells
+            you what happened.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <AskBox onRun={runRequest} busy={busy} />
+        </Reveal>
+      </section>
+
+      <section className="relative z-10">
 
         {/* Playground */}
-        <div id="playground" className="relative mx-auto mt-16 max-w-6xl scroll-mt-24 px-4 pb-24 sm:px-6">
+        <div id="playground" className="relative mx-auto mt-20 max-w-6xl scroll-mt-24 px-4 pb-24 sm:px-6">
           <TiltIn>
             <div className="beam rounded-3xl shadow-[0_40px_120px_-40px_rgba(99,102,241,.55)]">
               <Playground />

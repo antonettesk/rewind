@@ -1,5 +1,7 @@
 # AWS features: Amazon Nova planning and Amazon Polly voice
 
+> **Status on the live site:** switched off. My AWS account was locked during identity verification (KYC) before I could create the access key, so these run only with mocked clients in the tests for now. Setting the three environment variables below turns them on with no code changes.
+
 Both are optional and both sit outside the safety path. With them off, Rewind
 behaves exactly as before.
 
