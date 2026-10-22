@@ -15,7 +15,7 @@ const LABEL: Record<VoiceState, string> = {
  * An Echo-style light ring. Cyan sweeps while listening, the ring spins while
  * REWIND works, and it pulses while the assistant speaks.
  */
-export function VoiceOrb({ state, onClick, disabled, size = 'md' }: { state: VoiceState; onClick: () => void; disabled?: boolean; size?: 'md' | 'lg' }) {
+export function VoiceOrb({ state, onClick, disabled, size = 'md', level = 0 }: { state: VoiceState; onClick: () => void; disabled?: boolean; size?: 'md' | 'lg'; level?: number }) {
   const dim = size === 'lg' ? 'size-20' : 'size-14';
   return (
     <button
@@ -43,9 +43,10 @@ export function VoiceOrb({ state, onClick, disabled, size = 'md' }: { state: Voi
       {/* Glow */}
       <span
         aria-hidden
+        style={state === 'listening' ? { transform: `scale(${1 + level * 0.35})`, opacity: 0.35 + level * 0.65 } : undefined}
         className={cx(
-          'orb absolute -inset-2 -z-10 rounded-full blur-xl transition-opacity duration-500',
-          state === 'listening' || state === 'speaking' ? 'opacity-70' : state === 'thinking' ? 'opacity-40' : 'opacity-0',
+          'orb absolute -inset-2 -z-10 rounded-full blur-xl transition-[opacity,transform] duration-100',
+          state === 'speaking' ? 'opacity-70' : state === 'thinking' ? 'opacity-40' : state === 'listening' ? '' : 'opacity-0',
         )}
       />
       <span className="relative flex size-full items-center justify-center text-white">

@@ -34,6 +34,18 @@ declare module 'express-serve-static-core' {
   }
 }
 
+const PAGE_CSP =
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
+/**
+ * The on-device speech worker (Whisper via Transformers.js) is the only script
+ * that may compile WebAssembly, load its runtime from a blob: URL, and fetch
+ * model weights from Hugging Face. A worker obeys the policy on its own
+ * response, so the page's strict policy above is unchanged.
+ */
+const SPEECH_WORKER = /^\/assets\/whisper\.worker-[\w-]+\.js$/;
+const SPEECH_WORKER_CSP =
+  "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; connect-src 'self' blob: data: https://huggingface.co https://*.huggingface.co https://*.hf.co; object-src 'none'; base-uri 'none'";
+
 export function createHttpApp(app: App) {
   const { config } = app;
   // Host and Origin validation (DNS rebinding protection) for every route on loopback binds.
@@ -55,10 +67,7 @@ export function createHttpApp(app: App) {
     // Microphone for this origin only: the agent demo takes spoken requests.
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=()');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-    res.setHeader(
-      'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
-    );
+    res.setHeader('Content-Security-Policy', SPEECH_WORKER.test(req.path) ? SPEECH_WORKER_CSP : PAGE_CSP);
     if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     const started = process.hrtime.bigint();
     res.on('finish', () => {

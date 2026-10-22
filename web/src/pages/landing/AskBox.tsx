@@ -13,6 +13,8 @@ import { canListen, listen } from '../../lib/voice';
 export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice: boolean }) => void; busy: boolean }) {
   const [text, setText] = useState('');
   const [voice, setVoice] = useState<VoiceState>('idle');
+  const [level, setLevel] = useState(0);
+  const [status, setStatus] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const stop = useRef<(() => void) | null>(null);
   const plan = text.trim().length > 2 ? planFromRequest(text) : [];
@@ -27,10 +29,14 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
 
   const mic = () => {
     if (voice === 'listening') return stop.current?.();
+    if (voice === 'thinking') return;
     setHint(null);
     setVoice('listening');
     let heard = '';
     stop.current = listen({
+      onLevel: setLevel,
+      onPhase: (p) => setVoice(p === 'transcribing' ? 'thinking' : 'listening'),
+      onStatus: setStatus,
       onInterim: setText,
       onFinal: (t) => {
         heard = t;
@@ -43,7 +49,8 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
       },
       onEnd: () => {
         stop.current = null;
-        setVoice((v) => (v === 'listening' ? 'idle' : v));
+        setLevel(0);
+        setVoice((v) => (v === 'listening' || v === 'thinking' ? 'idle' : v));
         if (heard) submit(heard, true);
       },
     });
@@ -58,7 +65,7 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
         }}
         className="beam flex items-center gap-3 rounded-full border border-white/10 bg-[#0b0c10]/85 p-2 pl-2 shadow-[0_20px_60px_-20px_rgba(99,102,241,.6)] transition-colors focus-within:border-white/30 focus-within:bg-white/[.07]"
       >
-        {canListen() ? <VoiceOrb state={voice} onClick={mic} disabled={busy} /> : <span className="w-2" />}
+        {canListen() ? <VoiceOrb state={voice} onClick={mic} disabled={busy} level={level} /> : <span className="w-2" />}
         <label className="min-w-0 flex-1">
           <span className="sr-only">Ask your home to do something</span>
           <input
@@ -66,7 +73,7 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
             onChange={(e) => setText(e.target.value)}
             maxLength={500}
             disabled={busy || voice === 'listening'}
-            placeholder={voice === 'listening' ? 'Listening…' : 'Ask your home… “set the heat to 18 and lock up”'}
+            placeholder={voice === 'listening' ? 'Listening… tap the ring when you are done' : voice === 'thinking' ? 'Transcribing on your device…' : 'Ask your home… “set the heat to 18 and lock up”'}
             className="w-full bg-transparent py-3 text-[15px] text-white outline-none placeholder:text-white/35 focus-visible:outline-none"
           />
         </label>
@@ -82,7 +89,11 @@ export function AskBox({ onRun, busy }: { onRun: (request: string, opts: { voice
       </form>
 
       <div className="mt-3 min-h-6 px-3 text-xs">
-        {hint ? (
+        {status ? (
+          <p className="text-cyan-200/80" role="status">
+            {status}
+          </p>
+        ) : hint ? (
           <p className="text-amber-300" role="status">
             {hint}
           </p>

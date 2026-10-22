@@ -21,6 +21,8 @@ export function DemoPage() {
   const [params, setParams] = useSearchParams();
   const [request, setRequest] = useState(() => params.get('request')?.slice(0, 500) || DEFAULT_REQUEST);
   const [voice, setVoice] = useState<VoiceState>('idle');
+  const [level, setLevel] = useState(0);
+  const [voiceStatus, setVoiceStatus] = useState<string | null>(null);
   const [speakReplies, setSpeakReplies] = useState(() => params.get('voice') === '1');
   const stopListening = useRef<(() => void) | null>(null);
   // A run paused at the approval gate: the agent resumes from the next step once a person approves.
@@ -183,10 +185,14 @@ export function DemoPage() {
 
   function toggleListening() {
     if (voice === 'listening') return stopListening.current?.();
+    if (voice === 'thinking') return;
     hush();
     setVoice('listening');
     let heard = '';
     stopListening.current = listen({
+      onLevel: setLevel,
+      onPhase: (p) => setVoice(p === 'transcribing' ? 'thinking' : 'listening'),
+      onStatus: setVoiceStatus,
       onInterim: (t) => setRequest(t),
       onFinal: (t) => {
         heard = t;
@@ -199,10 +205,12 @@ export function DemoPage() {
       },
       onEnd: () => {
         stopListening.current = null;
+        setLevel(0);
+        setVoiceStatus(null);
         if (heard) {
           setSpeakReplies(true);
           void run(heard, { spoken: true });
-        } else setVoice((v) => (v === 'listening' ? 'idle' : v));
+        } else setVoice((v) => (v === 'listening' || v === 'thinking' ? 'idle' : v));
       },
     });
   }
@@ -251,7 +259,7 @@ export function DemoPage() {
           <Section title={<span className="flex items-center gap-2"><Mic className="size-4 text-fg-3" aria-hidden /> Request</span>}>
             <div className="space-y-4 p-4">
               <div className="flex items-start gap-4">
-                {canListen() && <VoiceOrb state={voice} onClick={toggleListening} disabled={running || planning || readOnly} />}
+                {canListen() && <VoiceOrb state={voice} onClick={toggleListening} disabled={running || planning || readOnly} level={level} />}
                 <label className="block min-w-0 flex-1">
                   <span className="sr-only">Request to the assistant</span>
                   <textarea
@@ -268,6 +276,11 @@ export function DemoPage() {
                   />
                 </label>
               </div>
+              {voiceStatus && (
+                <p className="text-xs text-info" role="status">
+                  {voiceStatus}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-1.5" aria-label="Sample requests">
                 <span className="mr-1 text-xs text-fg-3">Try:</span>
                 {SAMPLE_PROMPTS.map((p) => (
