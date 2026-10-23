@@ -12,9 +12,7 @@
     "db:migrate": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm scripts/db.ts migrate",
     "db:reset": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --import tsx/esm scripts/db.ts reset",
     "typecheck": "tsc -p tsconfig.json && tsc -p web/tsconfig.json",
-    "lint": "npm run typecheck",
-    "test": "vitest run",
-    "test:e2e": "playwright test"
+    "lint": "npm run typecheck"
   },
   "license": "MIT",
   "type": "module",

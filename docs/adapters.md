@@ -70,4 +70,4 @@ The demo adapter [src/adapters/home-sim/adapter.ts](../src/adapters/home-sim/ada
 
 ## Testing an adapter
 
-Add an integration test like those in [tests/scenarios.test.ts](../tests/scenarios.test.ts): run a plan through `app.engine`, arm a fault, and assert on state read back from your backing system, not only on engine return values.
+Add an integration test that runs a plan through `app.engine`, arms a fault, and asserts on state read back from your backing system, not only on engine return values.

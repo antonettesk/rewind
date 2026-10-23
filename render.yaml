@@ -1,4 +1,4 @@
-# Render Blueprint for Rewind. See docs/deploy-render.md.
+# Render Blueprint for Rewind. See "Deploy" in README.md.
 services:
   - type: web
     name: getrewind

@@ -2,5 +2,8 @@ node_modules
 web/dist
 data
 test-results
+artifacts
+tests
+e2e
 .git
 *.db*

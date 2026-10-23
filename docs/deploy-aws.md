@@ -1,6 +1,6 @@
 # AWS deployment (prepared, not performed)
 
-**Status:** not deployed. The AgentCore-compatible image and the upstream-trust mode are implemented and tested locally (`tests/mcp.test.ts`, "AgentCore mode"). The development machine has no AWS CLI or Docker CLI, and the AWS connector was not signed in, so nothing was built, pushed or invoked on AWS. Nothing in this repository claims a live AWS deployment.
+**Status:** not deployed. The AgentCore-compatible image and the upstream-trust mode are implemented and checked locally. Nothing was built, pushed or invoked on AWS. Nothing in this repository claims a live AWS deployment.
 
 ## Target: Amazon Bedrock AgentCore Runtime
 
