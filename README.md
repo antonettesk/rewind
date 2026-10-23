@@ -15,7 +15,7 @@ compensates in reverse order, and **reads every resource back to prove it was re
 ![Transport](https://img.shields.io/badge/Streamable_HTTP-11_tools-06b6d4?style=flat-square&labelColor=0b0c10)
 ![Node](https://img.shields.io/badge/Node.js-24-34d399?style=flat-square&labelColor=0b0c10)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&labelColor=0b0c10)
-![License](https://img.shields.io/badge/license-MIT-a5b4fc?style=flat-square&labelColor=0b0c10)
+![License](https://img.shields.io/badge/license-AGPL--3.0-a5b4fc?style=flat-square&labelColor=0b0c10)
 
 <br/>
 
@@ -239,5 +239,5 @@ All configuration is environment variables; see [.env.example](.env.example). Th
 <br/>
 <img src="web/public/icon.svg" alt="" width="40" height="40" />
 <br/>
-<sub><b>Rewind</b> · Undo for AI agents, with proof · <a href="LICENSE">MIT License</a> · <a href="THIRD_PARTY_NOTICES.md">Third-party notices</a></sub>
+<sub><b>Rewind</b> · Undo for AI agents, with proof · <a href="LICENSE">AGPL-3.0 License</a> · <a href="THIRD_PARTY_NOTICES.md">Third-party notices</a></sub>
 </div>

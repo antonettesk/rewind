@@ -14,7 +14,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p web/tsconfig.json",
     "lint": "npm run typecheck"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.1153.0",

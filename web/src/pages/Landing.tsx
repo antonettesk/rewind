@@ -509,7 +509,7 @@ export function LandingPage() {
       <footer className="relative z-10 border-t border-white/5">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <Logo small />
-          <p>The demo controls a synthetic home only: no real devices, accounts or data. MIT licensed.</p>
+          <p>The demo controls a synthetic home only: no real devices, accounts or data. AGPL-3.0 licensed.</p>
         </div>
       </footer>
     </div>

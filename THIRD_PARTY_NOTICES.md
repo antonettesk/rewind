@@ -1,6 +1,6 @@
 # Third-party notices
 
-Rewind is MIT licensed (see `LICENSE`). It builds on the open-source work below. Each project keeps its own license, and the full texts ship in `node_modules/<package>/LICENSE` after `npm ci`.
+Rewind is licensed under the GNU Affero General Public License v3.0 (see `LICENSE`). It builds on the open-source work below. Each project keeps its own license, and the full texts ship in `node_modules/<package>/LICENSE` after `npm ci`.
 
 | Component | Use in Rewind | License |
 | --- | --- | --- |
